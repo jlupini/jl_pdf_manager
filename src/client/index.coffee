@@ -11,7 +11,9 @@ $(document).ready ->
   #
   # Load NF Libs
   #
-  hook "loadNFLibraries()"
+
+  hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')"
+
 
   #
   # Global Vars

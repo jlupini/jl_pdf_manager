@@ -4,11 +4,9 @@ openDocument = (location) ->
   docRef = app.open(fileRef)
   return
 
-loadNFLibraries = ->
-  # FIXME: Include this in the CEP package in future
-  # alert "Loading NF Libraries\n WARNING to JESSE Make sure these libraries are contained within the project before bundling!"
-  loc = "/Users/jlupini/Documents/nf_tools/nf-scripts/build/runtimeLibraries.jsx"
-  $.evalFile(loc)
+debug = () ->
+  $.level = 2
+  debugger
 
 getCompName = ->
   return NFProject.activeComp().getName()

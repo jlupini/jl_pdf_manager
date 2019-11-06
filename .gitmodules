@@ -1,0 +1,3 @@
+[submodule "lib/nf_tools"]
+	path = lib/nf_tools
+	url = https://github.com/jlupini/nf_tools

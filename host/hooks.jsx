@@ -1,4 +1,4 @@
-var createHighlightFromAnnotation, getActivePage, getCompName, loadNFLibraries, openDocument, processRawAnnotationData;
+var createHighlightFromAnnotation, debug, getActivePage, getCompName, openDocument, processRawAnnotationData;
 
 openDocument = function(location) {
   var docRef, fileRef;
@@ -7,10 +7,9 @@ openDocument = function(location) {
   docRef = app.open(fileRef);
 };
 
-loadNFLibraries = function() {
-  var loc;
-  loc = "/Users/jlupini/Documents/nf_tools/nf-scripts/build/runtimeLibraries.jsx";
-  return $.evalFile(loc);
+debug = function() {
+  $.level = 2;
+  debugger;
 };
 
 getCompName = function() {

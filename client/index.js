@@ -8,7 +8,7 @@ $(document).ready(function() {
     }
     return csInterface.evalScript(hookString, callback);
   };
-  hook("loadNFLibraries()");
+  hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')");
   latestAnnotationData = {};
   smartTimer = null;
   rgbToHex = function(r, g, b) {
