@@ -35,39 +35,46 @@ $(document).ready ->
       r = r[0]
     '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
   getPageAnnotations = ->
-    hook "getActivePage()", (result) ->
-      if result isnt "null"
-        # console.log "active page is '#{result}'"
-        url = 'http://localhost:3200/annotationData'
-        $.ajax
-          type: 'GET'
-          url: url
-          headers: 'filepath': result
-          success: (response) ->
-            # Don't bother doing anything if there's no change
-            if JSON.stringify(response) is JSON.stringify(latestAnnotationData)
-              # console.log "no change to data"
-            else
-              console.log "data changed - updating"
-              console.log response
-              latestAnnotationData = response
-              disp = $("#annotation-display")
-              disp.empty()
-              for annotation, i in response
-                dispID = "annotation-#{i}"
-                colorClassName = annotation.colorName.replace(/\s+/g, '-').toLowerCase()
-                disp.append "<li id='#{dispID}' class='annotation-item #{colorClassName}'></li>"
-                dispElement = $("##{dispID}")
-                dispElement.append "<div class='clean-name'>#{annotation.cleanName}</div><div class='highlight-text'>#{annotation.text}</div>"
-                annotationDataString = JSON.stringify annotation
-                dispElement.click {param: annotationDataString}, (e) ->
-                  hook "createHighlightFromAnnotation('#{e.data.param}')"
-          error: (jqXHR, textStatus, errorThrown) ->
-            alert errorThrown, jqXHR.responseJSON
+    disp = $("#annotation-display")
+    hook "app.project", (res) ->
+      if res?
+        hook "getActivePageFile()", (result) ->
+          if result isnt "null"
+            url = 'http://localhost:3200/annotationData'
+            $.ajax
+              type: 'GET'
+              url: url
+              headers: 'filepath': result
+              success: (response) ->
+                # Don't bother doing anything if there's no change
+                if JSON.stringify(response) is JSON.stringify(latestAnnotationData)
+                  # console.log "no change to data"
+                else
+                  # console.log "data changed - updating"
+                  # console.log response
+                  latestAnnotationData = response
+                  disp.empty()
+                  if response.length is 0
+                    disp.append "<p class='no-annotations-found'>No annotations found in this PDF</p>"
+                  else
+                    for annotation, i in response
+                      dispID = "annotation-#{i}"
+                      colorClassName = annotation.colorName.replace(/\s+/g, '-').toLowerCase()
+                      disp.append "<li id='#{dispID}' class='annotation-item #{colorClassName}'></li>"
+                      dispElement = $("##{dispID}")
+                      dispElement.append "<div class='clean-name'>#{annotation.cleanName}</div><div class='highlight-text'>#{annotation.text}</div>"
+                      annotationDataString = JSON.stringify annotation
+                      dispElement.click {param: annotationDataString}, (e) ->
+                        hook "createHighlightFromAnnotation('#{e.data.param}')"
+              error: (jqXHR, textStatus, errorThrown) ->
+                alert errorThrown, jqXHR.responseJSON
+          else
+            disp.empty()
+            disp.append "<p class='no-active-page'>No active page</p>"
+            latestAnnotationData = {}
       else
-        disp = $("#annotation-display")
         disp.empty()
-        disp.append "<p class='no-active-page'>No active page</p>"
+        disp.append "<p class='no-active-project'>No active project</p>"
         latestAnnotationData = {}
   checkForUpdates = ->
     getPageAnnotations()

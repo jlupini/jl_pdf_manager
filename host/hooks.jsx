@@ -1,4 +1,4 @@
-var createHighlightFromAnnotation, debug, getActivePage, getCompName, openDocument, processRawAnnotationData;
+var createHighlightFromAnnotation, debug, getActivePageFile, getCompName, openDocument, processRawAnnotationData;
 
 openDocument = function(location) {
   var docRef, fileRef;
@@ -12,11 +12,13 @@ debug = function() {
   debugger;
 };
 
+getProject;
+
 getCompName = function() {
   return NFProject.activeComp().getName();
 };
 
-getActivePage = function() {
+getActivePageFile = function() {
   var activeComp;
   activeComp = NFProject.activeComp();
   if (activeComp instanceof NFPageComp) {

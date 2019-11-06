@@ -8,10 +8,12 @@ debug = () ->
   $.level = 2
   debugger
 
+getProject
+
 getCompName = ->
   return NFProject.activeComp().getName()
 
-getActivePage = ->
+getActivePageFile = ->
   activeComp = NFProject.activeComp()
   if activeComp instanceof NFPageComp
     return activeComp.getPDFLayer().layer.source.file.fsName
