@@ -12,8 +12,6 @@ debug = function() {
   debugger;
 };
 
-getProject;
-
 getCompName = function() {
   return NFProject.activeComp().getName();
 };
