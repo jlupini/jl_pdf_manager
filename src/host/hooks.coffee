@@ -8,8 +8,6 @@ debug = () ->
   $.level = 2
   debugger
 
-getProject
-
 getCompName = ->
   return NFProject.activeComp().getName()
 
