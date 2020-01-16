@@ -41,8 +41,8 @@ $(document).ready(function() {
             return $.ajax({
               type: 'GET',
               url: url,
-              headers: {
-                'filepath': result
+              data: {
+                filepath: result
               },
               success: function(response) {
                 var annotation, annotationDataString, colorClassName, dispElement, dispID, i, j, len, results;
@@ -74,7 +74,10 @@ $(document).ready(function() {
                 }
               },
               error: function(jqXHR, textStatus, errorThrown) {
-                return alert(errorThrown, jqXHR.responseJSON);
+                console.log("Error: " + errorThrown + ", " + jqXHR.responseJSON);
+                disp.empty();
+                disp.append("<p class='error-thrown'>The PDF Server returned an error. 🤷Talk to Jesse...</p>");
+                return latestAnnotationData = {};
               }
             });
           } else {

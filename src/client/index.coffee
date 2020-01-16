@@ -34,6 +34,8 @@ $(document).ready ->
       g = r[1]
       r = r[0]
     '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
+
+
   getPageAnnotations = ->
     disp = $("#annotation-display")
     hook "app.project", (res) ->
@@ -44,7 +46,7 @@ $(document).ready ->
             $.ajax
               type: 'GET'
               url: url
-              headers: 'filepath': result
+              data: filepath: result
               success: (response) ->
                 # Don't bother doing anything if there's no change
                 if JSON.stringify(response) is JSON.stringify(latestAnnotationData)
@@ -67,7 +69,10 @@ $(document).ready ->
                       dispElement.click {param: annotationDataString}, (e) ->
                         hook "createHighlightFromAnnotation('#{e.data.param}')"
               error: (jqXHR, textStatus, errorThrown) ->
-                alert errorThrown, jqXHR.responseJSON
+                console.log "Error: #{errorThrown}, #{jqXHR.responseJSON}"
+                disp.empty()
+                disp.append "<p class='error-thrown'>The PDF Server returned an error. 🤷Talk to Jesse...</p>"
+                latestAnnotationData = {}
           else
             disp.empty()
             disp.append "<p class='no-active-page'>No active page</p>"

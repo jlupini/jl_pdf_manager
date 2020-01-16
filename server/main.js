@@ -52,7 +52,7 @@ run = function() {
   });
   return app.get('/annotationData', function(req, res, next) {
     var afterLoad, annotations, handleError, handleSuccess, loadingTask, merge, round, textContent, viewport;
-    path = req.headers['filepath'];
+    path = req.query.filepath;
     viewport = 1;
     annotations = 1;
     textContent = 1;
