@@ -41,6 +41,7 @@ $(document).ready ->
     hook "app.project", (res) ->
       if res?
         hook "getActivePageFile()", (result) ->
+          console.log result
           if result isnt "null"
             url = 'http://localhost:3200/annotationData'
             $.ajax
@@ -104,6 +105,12 @@ $(document).ready ->
       smartTimer = setInterval checkForUpdates, 1000
 
   $('#one-page-annotations').click getPageAnnotations
+  $('#convert-shape').click ->
+    hook "convertShapeToHighlight()"
+  $('#classic-highlight').click ->
+    hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_SetupHighlightLayer.jsx')"
+  $('#toggle-guides').click ->
+    hook "toggleGuideLayers()"
 
 
   extensionDirectory = csInterface.getSystemPath('extension')

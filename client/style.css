@@ -53,6 +53,12 @@ button {
       background-image: url(assets/power.png); }
     button.ui-icon.ui-icon-reload {
       background-image: url(assets/reload.png); }
+    button.ui-icon.ui-icon-shape {
+      background-image: url(assets/shape.png); }
+    button.ui-icon.ui-icon-highlight {
+      background-image: url(assets/highlight.png); }
+    button.ui-icon.ui-icon-guides {
+      background-image: url(assets/guides.png); }
     button.ui-icon.ui-icon-auto {
       padding-left: 2.2em;
       background-image: url(assets/auto.png);

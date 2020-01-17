@@ -14,11 +14,35 @@ getCompName = ->
 getActivePageFile = ->
   activeComp = NFProject.activeComp()
   if activeComp instanceof NFPageComp
-    return activeComp.getPDFLayer().layer.source.file.fsName
+    return activeComp.getPDFLayer().$.source.file.fsName
   else return null
 
 processRawAnnotationData = (rawData) ->
   return NFPDFManager.processRawAnnotationData rawData
+
+toggleGuideLayers = () ->
+  NFProject.toggleGuideLayers()
+
+convertShapeToHighlight = () ->
+  app.beginUndoGroup "Convert Shape to Highlight"
+
+  selectedLayer = NFProject.selectedLayers()?.get(0)
+  return alert "No Valid Shape Layer Selected" unless selectedLayer? and selectedLayer instanceof NFShapeLayer
+  lineCount = parseInt prompt('How many initial highlight lines would you like to create?')
+  # Create the highlight effect
+  newName = selectedLayer.getName().replace("Imported PDF Shape: ", "")
+  for key, testColor of NFHighlightLayer.COLOR
+    newColor = testColor if newName.indexOf(testColor.str) >= 0
+  selectedLayer.containingComp().createHighlight
+    shapeLayer: selectedLayer
+    lines: lineCount
+    name: newName
+    color: newColor ? NFHighlightLayer.COLOR.YELLOW
+
+
+  selectedLayer.remove()
+
+  app.endUndoGroup()
 
 createHighlightFromAnnotation = (annotationDataString) ->
   app.beginUndoGroup "Create Highlight from Annotation"

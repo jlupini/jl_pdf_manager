@@ -36,6 +36,7 @@ $(document).ready(function() {
       if (res != null) {
         return hook("getActivePageFile()", function(result) {
           var url;
+          console.log(result);
           if (result !== "null") {
             url = 'http://localhost:3200/annotationData';
             return $.ajax({
@@ -115,5 +116,14 @@ $(document).ready(function() {
     }
   });
   $('#one-page-annotations').click(getPageAnnotations);
+  $('#convert-shape').click(function() {
+    return hook("convertShapeToHighlight()");
+  });
+  $('#classic-highlight').click(function() {
+    return hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_SetupHighlightLayer.jsx')");
+  });
+  $('#toggle-guides').click(function() {
+    return hook("toggleGuideLayers()");
+  });
   return extensionDirectory = csInterface.getSystemPath('extension');
 });
