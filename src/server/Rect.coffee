@@ -169,7 +169,7 @@ module.exports = class Rect
 
     if xOverlap > 0 and yOverlap > 0
       overlapArea = xOverlap * yOverlap
-      return overlapArea > testRect.area() / 2
+      return overlapArea / testRect.area() > 0.75
     else
       return false
 

@@ -230,7 +230,7 @@ module.exports = Rect = (function() {
     yOverlap = this.yOverlapWith(testRect);
     if (xOverlap > 0 && yOverlap > 0) {
       overlapArea = xOverlap * yOverlap;
-      return overlapArea > testRect.area() / 2;
+      return overlapArea / testRect.area() > 0.75;
     } else {
       return false;
     }
