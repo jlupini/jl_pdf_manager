@@ -92,11 +92,15 @@ $(document).ready ->
     window.location.reload true
   $('#smart-toggle').click ->
     if smartTimer?
-      hook "alert('Stopping smart updates')"
+      $("#smart-toggle").removeClass("running")
+      $('#one-page-annotations').removeClass("disabled")
+      # hook "alert('Stopping smart updates')"
       clearInterval smartTimer
       smartTimer = null
     else
-      hook "alert('Starting smart updates')"
+      $("#smart-toggle").addClass("running")
+      $('#one-page-annotations').addClass("disabled")
+      # hook "alert('Starting smart updates')"
       smartTimer = setInterval checkForUpdates, 1000
 
   $('#one-page-annotations').click getPageAnnotations

@@ -104,11 +104,13 @@ $(document).ready(function() {
   });
   $('#smart-toggle').click(function() {
     if (smartTimer != null) {
-      hook("alert('Stopping smart updates')");
+      $("#smart-toggle").removeClass("running");
+      $('#one-page-annotations').removeClass("disabled");
       clearInterval(smartTimer);
       return smartTimer = null;
     } else {
-      hook("alert('Starting smart updates')");
+      $("#smart-toggle").addClass("running");
+      $('#one-page-annotations').addClass("disabled");
       return smartTimer = setInterval(checkForUpdates, 1000);
     }
   });

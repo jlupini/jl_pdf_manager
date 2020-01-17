@@ -28,6 +28,102 @@ body
 h1
   font-weight: 100
 
+button
+  backface-visibility: hidden
+  outline: none
+  position: relative
+  cursor: pointer
+  display: inline-block
+  white-space: nowrap
+  background-color: #58c
+  border:
+    radius: 0px
+    width: 0px 0px 4px 0px
+    color: #246
+    style: solid
+  padding: 0.5em 1em 0.5em 1em
+  margin: 0 0 5px 0
+  color: #fff
+  font-size: 10px
+  font-family: Helvetica Neue
+  font-weight: 900
+  font-style: normal
+
+  &:hover
+    background-color: #71a3e3
+  &:active
+    background-color: #3172c4
+
+  &.running
+    background-color: #b769c7
+    border-color: #591d66
+    &:hover
+      background-color: #bf83cc
+    &:active
+      background-color: #9930b0
+
+  &.disabled
+    background-color: #a6a6a6
+    border-color: #7d7d7d
+    cursor: default
+    &:hover
+      background-color: #a6a6a6
+    &:active
+      background-color: #a6a6a6
+
+  &.ui-icon
+    padding-left: 2.1em
+    background:
+      repeat: no-repeat
+      size: 1.2em
+      position: 5px center
+
+    &.ui-icon-power
+      background-image: url(assets/power.png)
+    &.ui-icon-reload
+      background-image: url(assets/reload.png)
+    &.ui-icon-auto
+      padding-left: 2.2em
+      background:
+        image: url(assets/auto.png)
+        size: 1.5em
+
+  // span
+  //   z-index: 2
+  //   display: inline-block
+  //   position: relative
+  //   left: 0
+  //   top: 0
+  //   height: 1em%
+  //   // width: 100%
+  //   background:
+  //     image: url(assets/power.png)
+  //     repeat: no-repeat
+  //     size: 1.5em
+  //     position: left center
+
+  // >
+  //   div
+  //     color: #999
+  //     font-size: 10px
+  //     font-family: Helvetica Neue
+  //     font-weight: initial
+  //     font-style: normal
+  //     text-align: center
+  //     margin: 0px 0px 0px 0px
+  //
+  //   i
+  //     font-size: 1em
+  //     border-radius: 0px
+  //     border: 0px solid transparent
+  //     border-width: 0px 0px 0px 0px
+  //     padding: 0px 0px 0px 0px
+  //     margin: 0px 0px 0px 0px
+  //     position: static
+  //
+  //   .ld
+  //     font-size: initial
+
 li.annotation-item
   padding: 5px
   margin-bottom: 5px

@@ -6,6 +6,58 @@ body {
 h1 {
   font-weight: 100; }
 
+button {
+  backface-visibility: hidden;
+  outline: none;
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  white-space: nowrap;
+  background-color: #58c;
+  border-radius: 0px;
+  border-width: 0px 0px 4px 0px;
+  border-color: #246;
+  border-style: solid;
+  padding: 0.5em 1em 0.5em 1em;
+  margin: 0 0 5px 0;
+  color: #fff;
+  font-size: 10px;
+  font-family: Helvetica Neue;
+  font-weight: 900;
+  font-style: normal; }
+  button:hover {
+    background-color: #71a3e3; }
+  button:active {
+    background-color: #3172c4; }
+  button.running {
+    background-color: #b769c7;
+    border-color: #591d66; }
+    button.running:hover {
+      background-color: #bf83cc; }
+    button.running:active {
+      background-color: #9930b0; }
+  button.disabled {
+    background-color: #a6a6a6;
+    border-color: #7d7d7d;
+    cursor: default; }
+    button.disabled:hover {
+      background-color: #a6a6a6; }
+    button.disabled:active {
+      background-color: #a6a6a6; }
+  button.ui-icon {
+    padding-left: 2.1em;
+    background-repeat: no-repeat;
+    background-size: 1.2em;
+    background-position: 5px center; }
+    button.ui-icon.ui-icon-power {
+      background-image: url(assets/power.png); }
+    button.ui-icon.ui-icon-reload {
+      background-image: url(assets/reload.png); }
+    button.ui-icon.ui-icon-auto {
+      padding-left: 2.2em;
+      background-image: url(assets/auto.png);
+      background-size: 1.5em; }
+
 li.annotation-item {
   padding: 5px;
   margin-bottom: 5px;

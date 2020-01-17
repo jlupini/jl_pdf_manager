@@ -163,11 +163,19 @@ Processes the raw annotation Data into something usable by AE. Does NOT import t
  */
 
 processRawAnnotationData = function(rawAnnotationData) {
-  var alreadyAddedAnnotation, alreadyAddedAnnotationRect, annotationData, annotationRect, annotationsOverlap, averageLineHeight, cleanName, closestDistance, distance, distanceCheckAnnotation, distanceCheckAnnotationRect, expString, expandColor, exportData, i, j, k, l, len, len1, len2, len3, len4, len5, lineCount, lineHeightSum, m, matchedLine, matchingLineString, matchingLineStringArray, matchingLines, n, o, overlapExists, p, printPrev, testAnnotation, testAnnotationRect, textContent, textItem, textRect, trimmedAnnotationData, typeList, viewport;
-  console.log(rawAnnotationData);
+  var alreadyAddedAnnotation, alreadyAddedAnnotationRect, annotationData, annotationRect, annotationsOverlap, averageLineHeight, cleanName, closestDistance, distance, distanceCheckAnnotation, distanceCheckAnnotationRect, expString, expandColor, exportData, i, j, k, l, len, len1, len2, len3, len4, len5, lineCount, lineHeightSum, m, matchedLine, matchingLineString, matchingLineStringArray, matchingLines, n, o, overlapExists, p, testAnnotation, testAnnotationRect, textContent, textItem, textRect, trimmedAnnotationData, typeList, verbose, viewport;
+  verbose = true;
+  if (verbose) {
+    console.log("-----------------\nProcessing Raw Annotation Data:");
+    console.log(rawAnnotationData);
+    console.log("\n");
+  }
   annotationData = rawAnnotationData["annotations"];
   viewport = rawAnnotationData["viewport"];
   textContent = rawAnnotationData["textContent"];
+  if (verbose) {
+    console.log("Trimming to remove invalid or duplicate annotations");
+  }
   trimmedAnnotationData = [];
   for (i = k = 0, len = annotationData.length; k < len; i = ++k) {
     testAnnotation = annotationData[i];
@@ -175,11 +183,23 @@ processRawAnnotationData = function(rawAnnotationData) {
       testAnnotationRect = convertCartesian(testAnnotation.rect, viewport);
       annotationsOverlap = false;
       if (trimmedAnnotationData.length !== 0) {
+        if (verbose) {
+          console.log("Checking annotation #" + i + " for overlap");
+        }
+        if (verbose) {
+          console.log("It's rect is " + testAnnotationRect);
+        }
         for (j = l = 0, len1 = trimmedAnnotationData.length; l < len1; j = ++l) {
           alreadyAddedAnnotation = trimmedAnnotationData[j];
           alreadyAddedAnnotationRect = convertCartesian(alreadyAddedAnnotation.rect, viewport);
+          if (verbose) {
+            console.log("Rect of already added annotation is " + alreadyAddedAnnotationRect);
+          }
           if (testAnnotationRect.contains(alreadyAddedAnnotationRect)) {
             annotationsOverlap = true;
+            if (verbose) {
+              console.log("This one contains! Removing it");
+            }
             if (alreadyAddedAnnotation.types.indexOf(AnnotationTypeName[testAnnotation.annotationType]) < 0) {
               trimmedAnnotationData[j].types.push(AnnotationTypeName[testAnnotation.annotationType]);
             }
@@ -192,10 +212,23 @@ processRawAnnotationData = function(rawAnnotationData) {
       }
     }
   }
+  if (verbose) {
+    console.log("Done trimming - trimmed data:");
+    console.log(trimmedAnnotationData);
+    console.log("\n");
+  }
   exportData = [];
   for (i = m = 0, len2 = trimmedAnnotationData.length; m < len2; i = ++m) {
     testAnnotation = trimmedAnnotationData[i];
+    if (verbose) {
+      console.log("Working on annotation:");
+      console.log(testAnnotation);
+      console.log("\n");
+    }
     annotationRect = convertCartesian(testAnnotation.rect, viewport);
+    if (verbose) {
+      console.log("Converted Annotation Rect: " + annotationRect);
+    }
     expandColor = null;
     if (textContent.length === 0 || testAnnotation.annotationType === AnnotationType.SQUARE) {
       lineCount = 0;
@@ -204,23 +237,24 @@ processRawAnnotationData = function(rawAnnotationData) {
       matchingLineString = "";
       matchingLineStringArray = [];
       lineHeightSum = 0;
-      printPrev = true;
-      if (i === 0) {
-        console.log("annotation " + annotationRect);
-      }
       for (j = n = 0, len3 = textContent.length; n < len3; j = ++n) {
         textItem = textContent[j];
+        if (textItem.width < 0) {
+          if (verbose) {
+            console.log("Converted negative width value: " + textItem.width);
+          }
+          textItem.width = Math.abs(textItem.width);
+        }
+        if (textItem.height < 0) {
+          if (verbose) {
+            console.log("Converted negative height value: " + textItem.height);
+          }
+          textItem.height = Math.abs(textItem.height);
+        }
         textRect = new Rect(textItem);
         if (annotationRect.contains(textRect) || textRect.contains(annotationRect)) {
-          if (i === 0) {
-            if (printPrev) {
-              printPrev = false;
-              console.log("NUTTY ONE: " + textContent[j - 1].str + " (j is " + (j - 1) + ")");
-              console.log(new Rect(textContent[j - 1]));
-            }
-            console.log("str: '" + textItem.str + "'");
-            console.log(textRect);
-          }
+          console.log("Matched String: '" + textItem.str + "'");
+          console.log("String Rect: " + textRect);
           overlapExists = false;
           if (matchingLines.length !== 0) {
             for (o = 0, len4 = matchingLines.length; o < len4; o++) {
@@ -239,6 +273,9 @@ processRawAnnotationData = function(rawAnnotationData) {
         }
       }
       lineCount = matchingLines.length;
+      if (verbose) {
+        console.log("Found " + lineCount + " matching lines");
+      }
       if (testAnnotation.colorName.indexOf("Highlight Pink") >= 0) {
         if (lineCount !== 0) {
           averageLineHeight = lineHeightSum / lineCount;

@@ -28,6 +28,11 @@ module.exports = (grunt) ->
         cwd: 'src/CSXS'
         src: ['*.xml']
         dest: 'CSXS/'
+      assets:
+        expand: true
+        cwd: 'src/client'
+        src: 'assets/*'
+        dest: 'client'
     coffee:
       compileClient:
         options:

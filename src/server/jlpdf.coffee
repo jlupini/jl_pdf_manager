@@ -146,22 +146,33 @@ Processes the raw annotation Data into something usable by AE. Does NOT import t
 @returns {Object} the processed annotation data
 ###
 processRawAnnotationData = (rawAnnotationData) ->
-  console.log rawAnnotationData
+  verbose = yes
+
+  if verbose
+    console.log "-----------------\nProcessing Raw Annotation Data:"
+    console.log rawAnnotationData
+    console.log "\n"
+
   annotationData = rawAnnotationData["annotations"]
   viewport = rawAnnotationData["viewport"]
   textContent = rawAnnotationData["textContent"]
 
+  console.log "Trimming to remove invalid or duplicate annotations" if verbose
   # Remove all the annotations that take up the same space, or aren't the right type
   trimmedAnnotationData = []
   for testAnnotation, i in annotationData
-    if (RecognizedAnnotationTypes.indexOf(testAnnotation.annotationType) > -1)
+    if RecognizedAnnotationTypes.indexOf(testAnnotation.annotationType) > -1
       testAnnotationRect = convertCartesian(testAnnotation.rect, viewport)
       annotationsOverlap = no
       if trimmedAnnotationData.length isnt 0
+        console.log "Checking annotation ##{i} for overlap" if verbose
+        console.log "It's rect is #{testAnnotationRect}" if verbose
         for alreadyAddedAnnotation, j in trimmedAnnotationData
           alreadyAddedAnnotationRect = convertCartesian(alreadyAddedAnnotation.rect, viewport)
+          console.log "Rect of already added annotation is #{alreadyAddedAnnotationRect}" if verbose
           if testAnnotationRect.contains alreadyAddedAnnotationRect
             annotationsOverlap = yes
+            console.log "This one contains! Removing it" if verbose
             if alreadyAddedAnnotation.types.indexOf(AnnotationTypeName[testAnnotation.annotationType]) < 0
               trimmedAnnotationData[j].types.push AnnotationTypeName[testAnnotation.annotationType]
 
@@ -169,10 +180,21 @@ processRawAnnotationData = (rawAnnotationData) ->
         testAnnotation.types = [AnnotationTypeName[testAnnotation.annotationType]]
         trimmedAnnotationData.push testAnnotation
 
+  if verbose
+    console.log "Done trimming - trimmed data:"
+    console.log trimmedAnnotationData
+    console.log "\n"
+
   exportData = []
   for testAnnotation, i in trimmedAnnotationData
 
+    if verbose
+      console.log "Working on annotation:"
+      console.log testAnnotation
+      console.log "\n"
+
     annotationRect = convertCartesian(testAnnotation.rect, viewport)
+    console.log "Converted Annotation Rect: #{annotationRect}" if verbose
     expandColor = null
 
     # Count lines
@@ -184,20 +206,26 @@ processRawAnnotationData = (rawAnnotationData) ->
       matchingLineStringArray = []
       lineHeightSum = 0
 
-      printPrev = true
-      if i is 0
-        console.log "annotation #{annotationRect}"
+      # printPrev = true
+      # if i is 0
       for textItem, j in textContent
+
+        if textItem.width < 0
+          console.log "Converted negative width value: #{textItem.width}" if verbose
+          textItem.width = Math.abs textItem.width
+        if textItem.height < 0
+          console.log "Converted negative height value: #{textItem.height}" if verbose
+          textItem.height = Math.abs textItem.height
 
         textRect = new Rect textItem
         if annotationRect.contains(textRect) or textRect.contains(annotationRect)
-          if i is 0
-            if printPrev
-              printPrev = false
-              console.log "NUTTY ONE: #{textContent[j-1].str} (j is #{j-1})"
-              console.log new Rect textContent[j-1]
-            console.log "str: '#{textItem.str}'"
-            console.log textRect
+          # if i is 0
+          #   if printPrev
+          #     printPrev = false
+              # console.log "NUTTY ONE: #{textContent[j-1].str} (j is #{j-1})"
+              # console.log new Rect textContent[j-1]
+          console.log "Matched String: '#{textItem.str}'"
+          console.log "String Rect: #{textRect}"
           overlapExists = no
           if matchingLines.length isnt 0
             for matchedLine in matchingLines
@@ -210,6 +238,7 @@ processRawAnnotationData = (rawAnnotationData) ->
 
 
       lineCount = matchingLines.length
+      console.log "Found #{lineCount} matching lines" if verbose
 
       # Look for Expands
       if testAnnotation.colorName.indexOf("Highlight Pink") >= 0
