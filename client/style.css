@@ -2,6 +2,22 @@ body {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   background-color: #272727;
   color: white; }
+  body.no-layer #tab-no-layer {
+    color: red; }
+  body.misc-layer #tab-misc-layer {
+    color: red; }
+  body.page-layer #tab-page-layer {
+    color: red; }
+  body.page-comp #tab-page-comp {
+    color: red; }
+  body.part-comp #tab-part-comp {
+    color: red; }
+  body.highlight-layer #tab-highlight-layer {
+    color: red; }
+  body.highlight-control-layer #tab-highlight-control-layer {
+    color: red; }
+  body.misc-comp #tab-misc-comp {
+    color: red; }
 
 h1 {
   font-weight: 100; }

@@ -82,7 +82,14 @@ $(document).ready ->
         disp.empty()
         disp.append "<p class='no-active-project'>No active project</p>"
         latestAnnotationData = {}
+
+  compLayerType = ""
   checkForUpdates = ->
+    hook "getCompAndLayerType()", (res) ->
+      if compLayerType isnt res
+        compLayerType = res
+        $("body").removeClass()
+        $("body").addClass(res)
     getPageAnnotations()
 
   #
@@ -95,13 +102,11 @@ $(document).ready ->
     if smartTimer?
       $("#smart-toggle").removeClass("running")
       $('#one-page-annotations').removeClass("disabled")
-      # hook "alert('Stopping smart updates')"
       clearInterval smartTimer
       smartTimer = null
     else
       $("#smart-toggle").addClass("running")
       $('#one-page-annotations').addClass("disabled")
-      # hook "alert('Starting smart updates')"
       smartTimer = setInterval checkForUpdates, 1000
 
   $('#one-page-annotations').click getPageAnnotations

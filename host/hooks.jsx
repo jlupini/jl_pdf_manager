@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, getActivePageFile, getCompName, openDocument, processRawAnnotationData, toggleGuideLayers;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, getActivePageFile, getCompAndLayerType, openDocument, processRawAnnotationData, toggleGuideLayers;
 
 openDocument = function(location) {
   var docRef, fileRef;
@@ -12,8 +12,36 @@ debug = function() {
   debugger;
 };
 
-getCompName = function() {
-  return NFProject.activeComp().getName();
+getCompAndLayerType = function() {
+  var activeComp, compType, layerType, selectedLayers, singleLayer;
+  activeComp = NFProject.activeComp();
+  selectedLayers = NFProject.selectedLayers();
+  if (activeComp instanceof NFPageComp) {
+    compType = "page-comp";
+  } else if (activeComp instanceof NFPartComp) {
+    compType = "part-comp";
+  } else {
+    compType = "misc-comp";
+  }
+  if (selectedLayers.isEmpty()) {
+    layerType = "no-layer";
+  } else if (selectedLayers.count() === 1) {
+    singleLayer = selectedLayers.get(0);
+    if (singleLayer instanceof NFPageLayer) {
+      layerType = "page-layer";
+    }
+    if (singleLayer instanceof NFHighlightLayer) {
+      layerType = "highlight-layer";
+    }
+    if (singleLayer instanceof NFHighlightControlLayer) {
+      layerType = "highlight-control-layer";
+    } else {
+      layerType = "misc-layer";
+    }
+  } else {
+    layerType = "multiple-layers";
+  }
+  return layerType + " " + compType;
 };
 
 getActivePageFile = function() {

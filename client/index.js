@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var checkForUpdates, csInterface, extensionDirectory, getPageAnnotations, hook, latestAnnotationData, rgbToHex, smartTimer;
+  var checkForUpdates, compLayerType, csInterface, extensionDirectory, getPageAnnotations, hook, latestAnnotationData, rgbToHex, smartTimer;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -94,7 +94,15 @@ $(document).ready(function() {
       }
     });
   };
+  compLayerType = "";
   checkForUpdates = function() {
+    hook("getCompAndLayerType()", function(res) {
+      if (compLayerType !== res) {
+        compLayerType = res;
+        $("body").removeClass();
+        return $("body").addClass(res);
+      }
+    });
     return getPageAnnotations();
   };
   $('#reload-button').click(function() {

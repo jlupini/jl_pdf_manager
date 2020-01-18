@@ -8,8 +8,33 @@ debug = () ->
   $.level = 2
   debugger
 
-getCompName = ->
-  return NFProject.activeComp().getName()
+getCompAndLayerType = ->
+  activeComp = NFProject.activeComp()
+  selectedLayers = NFProject.selectedLayers()
+
+  if activeComp instanceof NFPageComp
+    compType = "page-comp"
+  else if activeComp instanceof NFPartComp
+    compType = "part-comp"
+  else compType = "misc-comp"
+
+  if selectedLayers.isEmpty()
+    layerType = "no-layer"
+  else if selectedLayers.count() is 1
+    singleLayer = selectedLayers.get(0)
+    if singleLayer instanceof NFPageLayer
+      layerType = "page-layer"
+    if singleLayer instanceof NFHighlightLayer
+      layerType = "highlight-layer"
+    if singleLayer instanceof NFHighlightControlLayer
+      layerType = "highlight-control-layer"
+    else layerType = "misc-layer"
+  else layerType = "multiple-layers"
+
+  # retObj =
+  #   compType: compType
+  #   layerType: layerType
+  return "#{layerType} #{compType}"
 
 getActivePageFile = ->
   activeComp = NFProject.activeComp()
