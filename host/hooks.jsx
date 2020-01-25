@@ -29,11 +29,9 @@ getCompAndLayerType = function() {
     singleLayer = selectedLayers.get(0);
     if (singleLayer instanceof NFPageLayer) {
       layerType = "page-layer";
-    }
-    if (singleLayer instanceof NFHighlightLayer) {
+    } else if (singleLayer instanceof NFHighlightLayer) {
       layerType = "highlight-layer";
-    }
-    if (singleLayer instanceof NFHighlightControlLayer) {
+    } else if (singleLayer instanceof NFHighlightControlLayer) {
       layerType = "highlight-control-layer";
     } else {
       layerType = "misc-layer";
