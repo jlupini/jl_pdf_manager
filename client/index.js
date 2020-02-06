@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var checkForUpdates, compLayerType, csInterface, extensionDirectory, getPageAnnotations, hook, latestAnnotationData, rgbToHex, smartTimer;
+  var checkForUpdates, compLayerType, csInterface, extensionDirectory, getPageAnnotations, hook, latestAnnotationData, rgbToHex, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -11,6 +11,7 @@ $(document).ready(function() {
   hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')");
   latestAnnotationData = {};
   smartTimer = null;
+  timerCounter = 0;
   rgbToHex = function(r, g, b) {
     var componentToHex;
     componentToHex = function(c) {
@@ -30,12 +31,15 @@ $(document).ready(function() {
     return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
   };
   getPageAnnotations = function() {
-    var disp;
+    var annotationDate, disp;
     disp = $("#annotation-display");
+    annotationDate = new Date();
+    console.log("getPageAnnotations()");
     return hook("app.project", function(res) {
       if (res != null) {
         return hook("getActivePageFile()", function(result) {
           var url;
+          console.log("annotation hook returned - " + (new Date() - annotationDate) + "ms");
           console.log(result);
           if (result !== "null") {
             url = 'http://localhost:3200/annotationData';
@@ -62,7 +66,7 @@ $(document).ready(function() {
                       colorClassName = annotation.colorName.replace(/\s+/g, '-').toLowerCase();
                       disp.append("<li id='" + dispID + "' class='annotation-item " + colorClassName + "'></li>");
                       dispElement = $("#" + dispID);
-                      dispElement.append("<div class='clean-name'>" + annotation.cleanName + "</div><div class='highlight-text'>" + annotation.text + "</div>");
+                      dispElement.append("<div class='clean-name'>" + annotation.cleanName + "</div> <div class='highlight-text'>" + annotation.text + "</div>");
                       annotationDataString = JSON.stringify(annotation);
                       results.push(dispElement.click({
                         param: annotationDataString
@@ -96,14 +100,27 @@ $(document).ready(function() {
   };
   compLayerType = "";
   checkForUpdates = function() {
-    hook("getCompAndLayerType()", function(res) {
-      if (compLayerType !== res) {
-        compLayerType = res;
-        $("body").removeClass();
-        return $("body").addClass(res);
-      }
-    });
-    return getPageAnnotations();
+    var startInterval;
+    if (timerCounter >= 60) {
+      console.log("threshold reached - stopping smart updates");
+      timerCounter = 0;
+      return $('#smart-toggle').click();
+    } else {
+      startInterval = new Date();
+      console.log("polling (" + timerCounter + ")...");
+      return hook("getCompAndLayerType()", function(res) {
+        console.log("hook returned (" + timerCounter + ") - " + (new Date() - startInterval) + "ms");
+        if (compLayerType !== res) {
+          compLayerType = res;
+          $("body").removeClass();
+          $("body").addClass(res);
+        }
+        timerCounter++;
+        if (compLayerType.indexOf("page-comp") >= 0) {
+          return getPageAnnotations();
+        }
+      });
+    }
   };
   $('#reload-button').click(function() {
     if (smartTimer != null) {
@@ -132,6 +149,30 @@ $(document).ready(function() {
   });
   $('#toggle-guides').click(function() {
     return hook("toggleGuideLayers()");
+  });
+  $("#out-transition .nf-fade").click(function() {
+    return hook("transitionFadeOut()");
+  });
+  $("#in-transition .nf-fade").click(function() {
+    return hook("transitionFadeIn()");
+  });
+  $("#out-transition .nf-slide").click(function() {
+    return hook("transitionSlideOut()");
+  });
+  $("#in-transition .nf-slide").click(function() {
+    return hook("transitionSlideIn()");
+  });
+  $("#out-transition .nf-fade-scale").click(function() {
+    return hook("transitionFadeScaleOut()");
+  });
+  $("#in-transition .nf-fade-scale").click(function() {
+    return hook("transitionFadeScaleIn()");
+  });
+  $("#out-transition .clear").click(function() {
+    return hook("transitionClearOut()");
+  });
+  $("#in-transition .clear").click(function() {
+    return hook("transitionClearIn()");
   });
   return extensionDirectory = csInterface.getSystemPath('extension');
 });

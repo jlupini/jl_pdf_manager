@@ -19,10 +19,6 @@
 	</div>
 
 	<div id="top-button-bar">
-		<button id="reload-button" class="ui-icon ui-icon-power">Restart</button>
-		<button id="smart-toggle" class="ui-icon ui-icon-auto">Auto</button>
-		<button id="one-page-annotations" class="ui-icon ui-icon-reload">Fetch</button>
-		<br />
 		<button id="convert-shape" class="ui-icon ui-icon-shape">Convert Shape</button>
 		<button id="toggle-guides" class="ui-icon ui-icon-guides">Toggle Guides</button>
 		<button id="classic-highlight" class="ui-icon ui-icon-highlight">Classic Highlighter</button>
@@ -33,6 +29,34 @@
 		<p class='welcome-message'>When in a page comp, click 'Manually Fetch Annotations' to load the PDF annotations for that file. For automatic fetching, click the 'toggle smart updates' button.</p>
 	</div>
 
+	<div id="transition-panel">
+		<div id="in-transition" class="active">
+			<div class="label">In</div>
+			<div class="transition-menu">
+				<div class="nf-fade">Fade</div>
+				<div class="nf-slide">Slide</div>
+				<div class="nf-fade-scale">Fade & Scale</div>
+				<div class="clear">Clear</div>
+			</div>
+		</div>
+		<div id="out-transition" class="active">
+			<div class="label">Out</div>
+			<div class="transition-menu">
+				<div class="nf-fade">Fade</div>
+				<div class="nf-slide">Slide</div>
+				<div class="nf-fade-scale">Fade & Scale</div>
+				<div class="clear">Clear</div>
+			</div>
+		</div>
+	</div>
+
+	<footer>
+		<button id="reload-button" class="ui-icon ui-icon-power">Restart</button>
+		<button id="smart-toggle" class="ui-icon ui-icon-auto">Auto</button>
+		<button id="one-page-annotations" class="ui-icon ui-icon-reload">Fetch Highlights</button>
+	</footer>
+
+	<script type="text/javascript" src="keyCodes.js"></script>
 	<script type="text/javascript" src="index.js"></script>
 </body>
 </html>

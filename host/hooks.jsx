@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, getActivePageFile, getCompAndLayerType, openDocument, processRawAnnotationData, toggleGuideLayers;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, getActivePageFile, getCompAndLayerType, openDocument, processRawAnnotationData, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 openDocument = function(location) {
   var docRef, fileRef;
@@ -10,6 +10,70 @@ openDocument = function(location) {
 debug = function() {
   $.level = 2;
   debugger;
+};
+
+transitionFadeIn = function() {
+  var theLayer;
+  theLayer = NFProject.singleSelectedLayer();
+  if (theLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  return theLayer.fadeIn();
+};
+
+transitionFadeOut = function() {
+  var theLayer;
+  theLayer = NFProject.singleSelectedLayer();
+  if (theLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  return theLayer.fadeOut();
+};
+
+transitionSlideIn = function() {
+  var theLayer;
+  theLayer = NFProject.singleSelectedLayer();
+  if (theLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  return theLayer.slideIn();
+};
+
+transitionSlideOut = function() {
+  var theLayer;
+  theLayer = NFProject.singleSelectedLayer();
+  if (theLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  return theLayer.slideOut();
+};
+
+transitionClearIn = function() {
+  var theLayer;
+  theLayer = NFProject.singleSelectedLayer();
+  alert("deleting in and out NF transitions");
+  if (theLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  return theLayer.removeNFMarkers();
+};
+
+transitionClearOut = function() {
+  var theLayer;
+  theLayer = NFProject.singleSelectedLayer();
+  alert("deleting in and out NF transitions");
+  if (theLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  return theLayer.removeNFMarkers();
+};
+
+transitionFadeScaleIn = function() {
+  return alert("haven't done this yet");
+};
+
+transitionFadeScaleOut = function() {
+  return alert("haven't done this yet");
 };
 
 getCompAndLayerType = function() {

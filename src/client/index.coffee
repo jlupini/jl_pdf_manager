@@ -8,6 +8,17 @@ $(document).ready ->
   hook = (hookString, callback = null) ->
     csInterface.evalScript hookString, callback
 
+  # Let Keystrokes through
+  # OSVersion = csInterface.getOSInformation()
+  # if OSVersion.indexOf("Windows") >= 0
+  #   csInterface.registerKeyEventsInterest keyEventsInterest.win
+  # else if OSVersion.indexOf("Mac") >= 0
+  #   csInterface.registerKeyEventsInterest keyEventsInterest.mac
+
+  # csInterface.addEventListener "documentAfterSave", (event) ->
+  #   obj = event.data
+  #   console.log(event)
+
   #
   # Load NF Libs
   #
@@ -20,6 +31,9 @@ $(document).ready ->
   #
   latestAnnotationData = {}
   smartTimer = null
+
+  # Debug Vars
+  timerCounter = 0
 
   #
   # Helper Functions
@@ -38,9 +52,12 @@ $(document).ready ->
 
   getPageAnnotations = ->
     disp = $("#annotation-display")
+    annotationDate = new Date()
+    console.log "getPageAnnotations()"
     hook "app.project", (res) ->
       if res?
         hook "getActivePageFile()", (result) ->
+          console.log "annotation hook returned - #{new Date() - annotationDate}ms"
           console.log result
           if result isnt "null"
             url = 'http://localhost:3200/annotationData'
@@ -65,7 +82,8 @@ $(document).ready ->
                       colorClassName = annotation.colorName.replace(/\s+/g, '-').toLowerCase()
                       disp.append "<li id='#{dispID}' class='annotation-item #{colorClassName}'></li>"
                       dispElement = $("##{dispID}")
-                      dispElement.append "<div class='clean-name'>#{annotation.cleanName}</div><div class='highlight-text'>#{annotation.text}</div>"
+                      dispElement.append "<div class='clean-name'>#{annotation.cleanName}</div>
+                                          <div class='highlight-text'>#{annotation.text}</div>"
                       annotationDataString = JSON.stringify annotation
                       dispElement.click {param: annotationDataString}, (e) ->
                         hook "createHighlightFromAnnotation('#{e.data.param}')"
@@ -85,12 +103,22 @@ $(document).ready ->
 
   compLayerType = ""
   checkForUpdates = ->
-    hook "getCompAndLayerType()", (res) ->
-      if compLayerType isnt res
-        compLayerType = res
-        $("body").removeClass()
-        $("body").addClass(res)
-    getPageAnnotations()
+    if timerCounter >= 60
+      console.log "threshold reached - stopping smart updates"
+      timerCounter = 0
+      $('#smart-toggle').click()
+    else
+      startInterval = new Date()
+      console.log "polling (#{timerCounter})..."
+      hook "getCompAndLayerType()", (res) ->
+        console.log "hook returned (#{timerCounter}) - #{new Date() - startInterval}ms"
+        if compLayerType isnt res
+          compLayerType = res
+          $("body").removeClass()
+          $("body").addClass(res)
+        timerCounter++
+        if compLayerType.indexOf("page-comp") >= 0
+          getPageAnnotations()
 
   #
   # Bindings
@@ -116,6 +144,26 @@ $(document).ready ->
     hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_SetupHighlightLayer.jsx')"
   $('#toggle-guides').click ->
     hook "toggleGuideLayers()"
+  #
+  # $('body').click ->
+  #   checkForUpdates() unless smartTimer?
+
+  $("#out-transition .nf-fade").click ->
+    hook "transitionFadeOut()"
+  $("#in-transition .nf-fade").click ->
+    hook "transitionFadeIn()"
+  $("#out-transition .nf-slide").click ->
+    hook "transitionSlideOut()"
+  $("#in-transition .nf-slide").click ->
+    hook "transitionSlideIn()"
+  $("#out-transition .nf-fade-scale").click ->
+    hook "transitionFadeScaleOut()"
+  $("#in-transition .nf-fade-scale").click ->
+    hook "transitionFadeScaleIn()"
+  $("#out-transition .clear").click ->
+    hook "transitionClearOut()"
+  $("#in-transition .clear").click ->
+    hook "transitionClearIn()"
 
 
   extensionDirectory = csInterface.getSystemPath('extension')

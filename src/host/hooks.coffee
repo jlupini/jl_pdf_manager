@@ -8,6 +8,39 @@ debug = () ->
   $.level = 2
   debugger
 
+
+transitionFadeIn = ->
+  theLayer = NFProject.singleSelectedLayer()
+  return alert "Please select a single layer first" unless theLayer?
+  theLayer.fadeIn()
+transitionFadeOut = ->
+  theLayer = NFProject.singleSelectedLayer()
+  return alert "Please select a single layer first" unless theLayer?
+  theLayer.fadeOut()
+transitionSlideIn = ->
+  theLayer = NFProject.singleSelectedLayer()
+  return alert "Please select a single layer first" unless theLayer?
+  theLayer.slideIn()
+transitionSlideOut = ->
+  theLayer = NFProject.singleSelectedLayer()
+  return alert "Please select a single layer first" unless theLayer?
+  theLayer.slideOut()
+transitionClearIn = ->
+  theLayer = NFProject.singleSelectedLayer()
+  alert "deleting in and out NF transitions"
+  return alert "Please select a single layer first" unless theLayer?
+  theLayer.removeNFMarkers()
+transitionClearOut = ->
+  theLayer = NFProject.singleSelectedLayer()
+  alert "deleting in and out NF transitions"
+  return alert "Please select a single layer first" unless theLayer?
+  theLayer.removeNFMarkers()
+transitionFadeScaleIn = ->
+  alert "haven't done this yet"
+transitionFadeScaleOut = ->
+  alert "haven't done this yet"
+
+
 getCompAndLayerType = ->
   activeComp = NFProject.activeComp()
   selectedLayers = NFProject.selectedLayers()

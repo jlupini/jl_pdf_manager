@@ -1,4 +1,11 @@
 $bgColor: #272727
+$darkbgColor: #1c1c1c
+$lightbgColor: #4f4f4f
+$lighterbgColor: #757575
+
+$lavender: #7e6282
+$lavender-up: #9e7ca3
+$lavender-down: #4d3352
 
 $annot-highlight-yellow: #facd5a
 $annot-highlight-green: #7dc768
@@ -20,10 +27,15 @@ $light-font: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", He
 $regular-font: "HelveticaNeue-Regular", "Helvetica Neue Regular", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
 $medium-font: "HelveticaNeue-Medium", "Helvetica Neue Medium", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif
 
+html
+  height: 100%
+
 body
   font-family: $light-font
   background-color: $bgColor
   color: white
+  // height: 100%
+  // min-height: 100%
 
   &.no-layer
     #tab-no-layer
@@ -37,6 +49,8 @@ body
   &.page-comp
     #tab-page-comp
       color: red
+    #annotation-display
+      display: block
   &.part-comp
     #tab-part-comp
       color: red
@@ -49,6 +63,77 @@ body
   &.misc-comp
     #tab-misc-comp
       color: red
+
+#tab-bar
+  display: none
+
+#annotation-display
+  display: none
+
+#transition-panel
+  display: inline-block
+
+  > div
+    display: inline-block
+    position: relative
+    cursor: pointer
+    width: 60px
+    height: 60px
+
+    .label
+      font-size: 0.8em
+      padding: 5px
+
+    &:hover
+      .transition-menu
+        display: block
+
+  #in-transition
+    &.active
+      background: linear-gradient(-45deg,$lavender,$lavender 43px,$darkbgColor 43px,$darkbgColor 20px)
+      &:hover
+        background: linear-gradient(-45deg,$lavender-up,$lavender-up 43px,$darkbgColor 43px,$darkbgColor 20px)
+      &:active
+        background: linear-gradient(-45deg,$lavender-down,$lavender-down 43px,$darkbgColor 43px,$darkbgColor 20px)
+
+  #out-transition
+    &.active
+      background: linear-gradient(45deg,$lavender,$lavender 43px,$darkbgColor 43px,$darkbgColor 20px)
+      &:hover
+        background: linear-gradient(45deg,$lavender-up,$lavender-up 43px,$darkbgColor 43px,$darkbgColor 20px)
+      &:active
+        background: linear-gradient(45deg,$lavender-down,$lavender-down 43px,$darkbgColor 43px,$darkbgColor 20px)
+
+    .label
+      text-align: right
+
+  .transition-menu
+    display: none
+    position: absolute
+    top: 0%
+    left: 0%
+    width: 100%
+    height: auto
+    padding-top: 5%
+    text-align: center
+    font-size: 0.8em
+    font-weight: 600
+    cursor: default
+    background: rgba(145, 145, 145, 0.9)
+    > div
+      cursor: pointer
+      margin: 2px
+      background: rgba(60, 60, 60, 0.4)
+      &:hover
+        background: rgba(60, 60, 60, 0.9)
+
+      //padding: 0 0 2px 0
+      // display: none
+
+footer
+  clear: both
+  position: absolute
+  bottom: 0px
 
 h1
   font-weight: 100
@@ -118,42 +203,6 @@ button
       background:
         image: url(assets/auto.png)
         size: 1.5em
-
-  // span
-  //   z-index: 2
-  //   display: inline-block
-  //   position: relative
-  //   left: 0
-  //   top: 0
-  //   height: 1em%
-  //   // width: 100%
-  //   background:
-  //     image: url(assets/power.png)
-  //     repeat: no-repeat
-  //     size: 1.5em
-  //     position: left center
-
-  // >
-  //   div
-  //     color: #999
-  //     font-size: 10px
-  //     font-family: Helvetica Neue
-  //     font-weight: initial
-  //     font-style: normal
-  //     text-align: center
-  //     margin: 0px 0px 0px 0px
-  //
-  //   i
-  //     font-size: 1em
-  //     border-radius: 0px
-  //     border: 0px solid transparent
-  //     border-width: 0px 0px 0px 0px
-  //     padding: 0px 0px 0px 0px
-  //     margin: 0px 0px 0px 0px
-  //     position: static
-  //
-  //   .ld
-  //     font-size: initial
 
 li.annotation-item
   padding: 5px
