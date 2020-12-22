@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var checkForUpdates, compLayerType, csInterface, extensionDirectory, getPageAnnotations, hook, latestAnnotationData, rgbToHex, smartTimer, timerCounter;
+  var checkForUpdates, compLayerType, csInterface, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, latestAnnotationData, picker, rgbToHex, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -99,33 +99,41 @@ $(document).ready(function() {
     });
   };
   compLayerType = "";
+  timerCounter = 0;
   checkForUpdates = function() {
-    var startInterval;
-    if (timerCounter >= 60) {
+    if (timerCounter >= 600) {
       console.log("threshold reached - stopping smart updates");
       timerCounter = 0;
       return $('#smart-toggle').click();
     } else {
-      startInterval = new Date();
-      console.log("polling (" + timerCounter + ")...");
-      return hook("getCompAndLayerType()", function(res) {
-        console.log("hook returned (" + timerCounter + ") - " + (new Date() - startInterval) + "ms");
-        if (compLayerType !== res) {
-          compLayerType = res;
-          $("body").removeClass();
-          $("body").addClass(res);
-        }
-        timerCounter++;
-        if (compLayerType.indexOf("page-comp") >= 0) {
-          return getPageAnnotations();
-        }
-      });
+      return getPollingData();
     }
+  };
+  getPollingData = function() {
+    var startInterval;
+    console.log("polling (" + (smartTimer != null ? timerCounter : "one-time") + ")...");
+    startInterval = new Date();
+    return hook("getPollingData()", function(res) {
+      var data;
+      console.log("polling data returned (" + (smartTimer != null ? timerCounter : "one-time") + ") - " + (new Date() - startInterval) + "ms");
+      data = JSON.parse(res);
+      if (compLayerType !== data.bodyClass) {
+        compLayerType = data.bodyClass;
+        $("body").removeClass();
+        $("body").addClass(compLayerType);
+      }
+      $("body").data(data);
+      timerCounter++;
+      if (compLayerType.indexOf("page-comp") >= 0) {
+        return getPageAnnotations();
+      }
+    });
   };
   $('#reload-button').click(function() {
     if (smartTimer != null) {
       clearInterval(smartTimer);
     }
+    hook("$.evalFile($.includePath + '/hooks.jsx')");
     return window.location.reload(true);
   });
   $('#smart-toggle').click(function() {
@@ -137,10 +145,12 @@ $(document).ready(function() {
     } else {
       $("#smart-toggle").addClass("running");
       $('#one-page-annotations').addClass("disabled");
-      return smartTimer = setInterval(checkForUpdates, 1000);
+      return smartTimer = setInterval(checkForUpdates, 500);
     }
   });
-  $('#one-page-annotations').click(getPageAnnotations);
+  $('#single-fetch').click(function() {
+    return getPollingData();
+  });
   $('#convert-shape').click(function() {
     return hook("convertShapeToHighlight()");
   });
@@ -173,6 +183,60 @@ $(document).ready(function() {
   });
   $("#in-transition .clear").click(function() {
     return hook("transitionClearIn()");
+  });
+  $("button.emphasizer-button").click(function() {
+    return hook("emphasisLayerSelected()", function(res) {
+      if (res === "true") {
+        return alert("already emphasisezd");
+      } else {
+        return hook("makeEmphasisLayer()");
+      }
+    });
+  });
+  $("button.blend-button").click(function() {
+    return $('#blend-menu').toggle();
+  });
+  $('#blend-screen-button').click(function() {
+    $('#blend-menu').toggle();
+    return hook("setBlendingMode('screen')");
+  });
+  $('#blend-normal-button').click(function() {
+    $('#blend-menu').toggle();
+    return hook("setBlendingMode('normal')");
+  });
+  $('#blend-multiply-button').click(function() {
+    $('#blend-menu').toggle();
+    return hook("setBlendingMode('multiply')");
+  });
+  $('#blend-overlay-button').click(function() {
+    $('#blend-menu').toggle();
+    return hook("setBlendingMode('overlay')");
+  });
+  rgbaToFloatRGB = function(arr) {
+    return [arr[0] / 255, arr[1] / 255, arr[2] / 255];
+  };
+  empColorPickButton = $('#emphasizer-panel .color-field');
+  picker = new Picker(empColorPickButton[0]);
+  picker.setOptions({
+    popup: "right",
+    alpha: false,
+    color: empColorPickButton.css("background-color"),
+    onChange: function(color) {
+      return empColorPickButton.css({
+        'background-color': color.rgbaString
+      });
+    },
+    onDone: function(color) {
+      var cylonParams;
+      empColorPickButton.css({
+        'background-color': color.rgbaString
+      });
+      cylonParams = {
+        name: "AV Cylon1",
+        color: rgbaToFloatRGB(color.rgba)
+      };
+      return hook("setCylonProperties('" + (JSON.stringify(cylonParams)) + "')");
+    }
   });
   return extensionDirectory = csInterface.getSystemPath('extension');
 });

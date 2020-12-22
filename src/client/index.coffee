@@ -102,29 +102,37 @@ $(document).ready ->
         latestAnnotationData = {}
 
   compLayerType = ""
+  timerCounter = 0
   checkForUpdates = ->
-    if timerCounter >= 60
+    if timerCounter >= 600
       console.log "threshold reached - stopping smart updates"
       timerCounter = 0
       $('#smart-toggle').click()
     else
-      startInterval = new Date()
-      console.log "polling (#{timerCounter})..."
-      hook "getCompAndLayerType()", (res) ->
-        console.log "hook returned (#{timerCounter}) - #{new Date() - startInterval}ms"
-        if compLayerType isnt res
-          compLayerType = res
-          $("body").removeClass()
-          $("body").addClass(res)
-        timerCounter++
-        if compLayerType.indexOf("page-comp") >= 0
-          getPageAnnotations()
+      getPollingData()
+
+  getPollingData = ->
+    console.log "polling (#{if smartTimer? then timerCounter else "one-time"})..."
+    startInterval = new Date()
+    hook "getPollingData()", (res) ->
+      console.log "polling data returned (#{if smartTimer? then timerCounter else "one-time"}) - #{new Date() - startInterval}ms"
+      # console.log res
+      data = JSON.parse res
+      if compLayerType isnt data.bodyClass
+        compLayerType = data.bodyClass
+        $("body").removeClass()
+        $("body").addClass(compLayerType)
+      $("body").data data
+      timerCounter++
+      if compLayerType.indexOf("page-comp") >= 0
+        getPageAnnotations()
 
   #
   # Bindings
   #
   $('#reload-button').click ->
     clearInterval smartTimer if smartTimer?
+    hook "$.evalFile($.includePath + '/hooks.jsx')"
     window.location.reload true
   $('#smart-toggle').click ->
     if smartTimer?
@@ -135,18 +143,19 @@ $(document).ready ->
     else
       $("#smart-toggle").addClass("running")
       $('#one-page-annotations').addClass("disabled")
-      smartTimer = setInterval checkForUpdates, 1000
+      smartTimer = setInterval checkForUpdates, 500
 
-  $('#one-page-annotations').click getPageAnnotations
+  # $('#smart-toggle').click()
+
+  $('#single-fetch').click ->
+    getPollingData()
   $('#convert-shape').click ->
     hook "convertShapeToHighlight()"
   $('#classic-highlight').click ->
     hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_SetupHighlightLayer.jsx')"
   $('#toggle-guides').click ->
     hook "toggleGuideLayers()"
-  #
-  # $('body').click ->
-  #   checkForUpdates() unless smartTimer?
+
 
   $("#out-transition .nf-fade").click ->
     hook "transitionFadeOut()"
@@ -164,6 +173,56 @@ $(document).ready ->
     hook "transitionClearOut()"
   $("#in-transition .clear").click ->
     hook "transitionClearIn()"
+
+  $("button.emphasizer-button").click ->
+    hook "emphasisLayerSelected()", (res) ->
+      if res is "true"
+        alert "already emphasisezd"
+      else hook "makeEmphasisLayer()"
+
+  $("button.blend-button").click ->
+    $('#blend-menu').toggle()
+  $('#blend-screen-button').click ->
+    $('#blend-menu').toggle()
+    hook "setBlendingMode('screen')"
+  $('#blend-normal-button').click ->
+    $('#blend-menu').toggle()
+    hook "setBlendingMode('normal')"
+  $('#blend-multiply-button').click ->
+    $('#blend-menu').toggle()
+    hook "setBlendingMode('multiply')"
+  $('#blend-overlay-button').click ->
+    $('#blend-menu').toggle()
+    hook "setBlendingMode('overlay')"
+
+
+  rgbaToFloatRGB = (arr) ->
+    return [arr[0]/255, arr[1]/255, arr[2]/255]
+  empColorPickButton = $('#emphasizer-panel .color-field')
+  picker = new Picker empColorPickButton[0]
+  # console.log "color" + parent.style.backgroundColor
+  picker.setOptions
+    popup: "right"
+    alpha: false
+    color: empColorPickButton.css "background-color"
+    onChange: (color) ->
+      # Set the picker button's color
+      empColorPickButton.css
+        'background-color': color.rgbaString
+    onDone: (color) ->
+      # Set the picker button's color
+      empColorPickButton.css
+        'background-color': color.rgbaString
+      # Set the actual cylon color
+      ## FIXME: This only works for the first cylon right now
+      cylonParams =
+        name: "AV Cylon1"
+        color: rgbaToFloatRGB(color.rgba)
+      hook "setCylonProperties('#{JSON.stringify cylonParams}')"
+    # onClose: (color) ->
+    #
+
+
 
 
   extensionDirectory = csInterface.getSystemPath('extension')

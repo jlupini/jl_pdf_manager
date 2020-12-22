@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, getActivePageFile, getCompAndLayerType, openDocument, processRawAnnotationData, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, emphasisLayerSelected, getActivePageFile, getCompAndLayerType, getEmphasisProperties, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 openDocument = function(location) {
   var docRef, fileRef;
@@ -10,6 +10,54 @@ openDocument = function(location) {
 debug = function() {
   $.level = 2;
   debugger;
+};
+
+makeEmphasisLayer = function() {
+  var selectedLayer;
+  selectedLayer = NFProject.singleSelectedLayer();
+  if (selectedLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  return selectedLayer.addEmphasisLayer();
+};
+
+emphasisLayerSelected = function() {
+  var selectedLayer;
+  selectedLayer = NFProject.singleSelectedLayer();
+  return (selectedLayer != null) && selectedLayer instanceof NFEmphasisLayer;
+};
+
+setEmphasisProperties = function(paramsJSON) {
+  var params, selectedLayer;
+  selectedLayer = NFProject.singleSelectedLayer();
+  if (selectedLayer == null) {
+    return alert("Please select a single emphasis layer");
+  }
+  params = JSON.parse(paramsJSON);
+  if (params.name == null) {
+    return alert("Error - no cylon specified");
+  }
+  if (params.color != null) {
+    return selectedLayer.effect(params.name).property("Color").setValue(params.color);
+  }
+};
+
+getEmphasisProperties = function() {
+  var allEffects, layer, selectedLayer;
+  selectedLayer = NFProject.singleSelectedLayer();
+  if (selectedLayer == null) {
+    return alert("Please select a single layer first");
+  }
+  allEffects = {};
+  layer = new aeq.Layer(selectedLayer.$);
+  layer.forEachEffect(function(e) {
+    return allEffects[e.name] = {
+      thickness: e.property("Thickness").value,
+      lag: e.property("Lag").value,
+      color: e.property("Color").value
+    };
+  });
+  return allEffects;
 };
 
 transitionFadeIn = function() {
@@ -76,8 +124,27 @@ transitionFadeScaleOut = function() {
   return alert("haven't done this yet");
 };
 
-getCompAndLayerType = function() {
-  var activeComp, compType, layerType, selectedLayers, singleLayer;
+setBlendingMode = function(mode) {
+  var modeCode;
+  if (mode === "overlay") {
+    modeCode = BlendingMode.OVERLAY;
+  } else if (mode === "multiply") {
+    modeCode = BlendingMode.MULTIPLY;
+  } else if (mode === "screen") {
+    modeCode = BlendingMode.SCREEN;
+  } else {
+    modeCode = BlendingMode.NORMAL;
+  }
+  return NFProject.selectedLayers().forEach((function(_this) {
+    return function(layer) {
+      return layer.$.blendingMode = modeCode;
+    };
+  })(this));
+};
+
+getPollingData = function() {
+  var activeComp, compType, layerType, model, selectedLayers, singleLayer;
+  model = {};
   activeComp = NFProject.activeComp();
   selectedLayers = NFProject.selectedLayers();
   if (activeComp instanceof NFPageComp) {
@@ -97,11 +164,67 @@ getCompAndLayerType = function() {
       layerType = "highlight-layer";
     } else if (singleLayer instanceof NFHighlightControlLayer) {
       layerType = "highlight-control-layer";
+    } else if (singleLayer instanceof NFEmphasisLayer) {
+      layerType = "emphasis-layer";
     } else {
       layerType = "misc-layer";
     }
   } else {
     layerType = "multiple-layers";
+  }
+  model.bodyClass = layerType + " " + compType;
+  model.selectedLayers = [];
+  selectedLayers.forEach((function(_this) {
+    return function(layer) {
+      return model.selectedLayers.push(layer.getName());
+    };
+  })(this));
+  if (selectedLayers.count() === 1) {
+    model.effects = {};
+    singleLayer.aeq().forEachEffect((function(_this) {
+      return function(e) {
+        model.effects[e.name] = {};
+        if (e.matchName.indexOf("AV_") >= 0) {
+          return e.forEach(function(prop) {
+            return model.effects[e.name][prop.name] = [prop.value];
+          });
+        }
+      };
+    })(this));
+  }
+  return JSON.stringify(model);
+};
+
+getCompAndLayerType = function() {
+  var activeComp, compType, layerType, selectedLayers, singleLayer;
+  activeComp = NFProject.activeComp();
+  selectedLayers = NFProject.selectedLayers();
+  if (activeComp instanceof NFPageComp) {
+    compType = "page-comp";
+  } else if (activeComp instanceof NFPartComp) {
+    compType = "part-comp";
+  } else {
+    compType = "misc-comp";
+  }
+  if (selectedLayers.isEmpty()) {
+    layerType = "no-layer";
+  } else {
+    if (selectedLayers.count() === 1) {
+      singleLayer = selectedLayers.get(0);
+      if (singleLayer instanceof NFPageLayer) {
+        layerType = "page-layer";
+      } else if (singleLayer instanceof NFHighlightLayer) {
+        layerType = "highlight-layer";
+      } else if (singleLayer instanceof NFHighlightControlLayer) {
+        layerType = "highlight-control-layer";
+      } else if (singleLayer instanceof NFEmphasisLayer) {
+        layerType = "emphasis-layer";
+      } else {
+        layerType = "misc-layer";
+      }
+    } else {
+      layerType = "multiple-layers";
+    }
   }
   return layerType + " " + compType;
 };

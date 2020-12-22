@@ -2,11 +2,12 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Your First Fullstack Panel</title>
+	<title>NF Animation Assistant</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<script type="text/javascript" src="CSInterface.js"></script>
 	<!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
 	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="https://unpkg.com/vanilla-picker@2"></script>
 </head>
 <body class="">
 	<!-- <h1>PDF Connector</h1> -->
@@ -29,8 +30,8 @@
 		<p class='welcome-message'>When in a page comp, click 'Manually Fetch Annotations' to load the PDF annotations for that file. For automatic fetching, click the 'toggle smart updates' button.</p>
 	</div>
 
-	<div id="transition-panel">
-		<div id="in-transition" class="active">
+	<!-- <div id="transition-panel">
+		<div id="in-transition" class="active transition">
 			<div class="label">In</div>
 			<div class="transition-menu">
 				<div class="nf-fade">Fade</div>
@@ -39,7 +40,8 @@
 				<div class="clear">Clear</div>
 			</div>
 		</div>
-		<div id="out-transition" class="active">
+		<div id="layer-animations"></div>
+		<div id="out-transition" class="active transition">
 			<div class="label">Out</div>
 			<div class="transition-menu">
 				<div class="nf-fade">Fade</div>
@@ -48,12 +50,39 @@
 				<div class="clear">Clear</div>
 			</div>
 		</div>
+	</div> -->
+
+	<div id="layer-controls">
+		<div id="blend-modes">
+			<button class="blend-button">Blend Mode</button>
+			<div id="blend-menu" class="menu">
+				<div id="blend-normal-button" class="choice">Normal</div>
+				<div id="blend-overlay-button" class="choice">Overlay</div>
+				<div id="blend-multiply-button" class="choice">Multiply</div>
+				<div id="blend-screen-button" class="choice">Screen</div>
+			</div>
+		</div>
+		<div id="emphasis-controls">
+			<button class="emphasizer-button">Emphasizer</button>
+			<!-- <div id="blend-menu" class="menu">
+				<div id="blend-normal-button" class="choice">Normal</div>
+				<div id="blend-overlay-button" class="choice">Overlay</div>
+				<div id="blend-multiply-button" class="choice">Multiply</div>
+				<div id="blend-screen-button" class="choice">Screen</div>
+			</div> -->
+		</div>
+	</div>
+
+	<div id="emphasizer-panel">
+		<div class="color-container">
+			<div class="color-field"></div>
+		</div>
 	</div>
 
 	<footer>
 		<button id="reload-button" class="ui-icon ui-icon-power">Restart</button>
 		<button id="smart-toggle" class="ui-icon ui-icon-auto">Auto</button>
-		<button id="one-page-annotations" class="ui-icon ui-icon-reload">Fetch Highlights</button>
+		<button id="single-fetch" class="ui-icon ui-icon-reload">Single Fetch</button>
 	</footer>
 
 	<script type="text/javascript" src="keyCodes.js"></script>

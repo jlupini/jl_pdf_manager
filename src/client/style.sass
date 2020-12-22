@@ -1,11 +1,15 @@
 $bgColor: #272727
 $darkbgColor: #1c1c1c
+$midbgColor: #3d3d3d
 $lightbgColor: #4f4f4f
 $lighterbgColor: #757575
 
 $lavender: #7e6282
 $lavender-up: #9e7ca3
 $lavender-down: #4d3352
+
+$button-blue: #58c
+$button-blue-up: #71a3e3
 
 $annot-highlight-yellow: #facd5a
 $annot-highlight-green: #7dc768
@@ -43,6 +47,9 @@ body
   &.misc-layer
     #tab-misc-layer
       color: red
+  &.emphasis-layer
+    #emphasizer-panel
+      display: block
   &.page-layer
     #tab-page-layer
       color: red
@@ -70,23 +77,107 @@ body
 #annotation-display
   display: none
 
+#emphasizer-panel
+  display: none
+  width: 100%
+  height: 100px
+  padding: 10px
+  background: $midbgColor
+
+  .color-container
+    padding: 2px
+    display: inline-block
+    background: $lighterbgColor
+
+  .color-field
+    width: 40px
+    height: 20px
+    background: $lightbgColor
+
+    .picker_sample
+      display: none
+
+    .picker_editor
+      width: 55%
+      margin-right: 0
+
+      input
+        font-size: 10px
+        background: #383838
+        color: white
+
+    .picker_wrapper
+      width: 10em
+      background: #383838
+
+      .picker_arrow::before, .picker_arrow::after
+        background: #383838
+
+    .picker_slider
+      padding: 0.5em
+
+    .picker_done
+      margin-left: 0
+
+      button
+        font-size: 10px
+        margin: 0
+        padding: 0.3em 0.5em
+        color: grey
+
+#layer-controls
+
+  > div
+    position: relative
+    vertical-align: bottom
+    width: 80px
+
+  button
+    display: block
+    width: 100%
+    margin-bottom: 0
+
+  .menu
+    display: none
+    position: absolute
+    background: $button-blue
+    width: 100%
+    font-size: 0.7em
+    font-weight: 600
+    z-index: 10
+
+    div
+      padding: 5px
+      cursor: pointer
+
+      &:hover
+        background: $button-blue-up
+
 #transition-panel
   display: inline-block
 
-  > div
-    display: inline-block
+  > .transition
+    float: left
     position: relative
     cursor: pointer
     width: 60px
     height: 60px
 
     .label
+      position: absolute
       font-size: 0.8em
       padding: 5px
 
     &:hover
       .transition-menu
         display: block
+        z-index: 10
+
+  #layer-animations
+    float: left
+    height: 60px
+    width: 200px
+    background-color: $lavender
 
   #in-transition
     &.active
@@ -105,7 +196,7 @@ body
         background: linear-gradient(45deg,$lavender-down,$lavender-down 43px,$darkbgColor 43px,$darkbgColor 20px)
 
     .label
-      text-align: right
+      right: 0
 
   .transition-menu
     display: none
@@ -145,7 +236,7 @@ button
   cursor: pointer
   display: inline-block
   white-space: nowrap
-  background-color: #58c
+  background-color: $button-blue
   border:
     radius: 0px
     width: 0px 0px 4px 0px
@@ -160,7 +251,7 @@ button
   font-style: normal
 
   &:hover
-    background-color: #71a3e3
+    background-color: $button-blue-up
   &:active
     background-color: #3172c4
 

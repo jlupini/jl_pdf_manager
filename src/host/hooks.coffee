@@ -8,7 +8,46 @@ debug = () ->
   $.level = 2
   debugger
 
+#
+# Emphasizer
+#
+makeEmphasisLayer = ->
+  selectedLayer = NFProject.singleSelectedLayer()
+  return alert "Please select a single layer first" unless selectedLayer?
+  selectedLayer.addEmphasisLayer()
 
+emphasisLayerSelected = ->
+  selectedLayer = NFProject.singleSelectedLayer()
+  return selectedLayer? and selectedLayer instanceof NFEmphasisLayer
+
+setEmphasisProperties = (paramsJSON) ->
+  selectedLayer = NFProject.singleSelectedLayer()
+  return alert "Please select a single emphasis layer" unless selectedLayer?
+
+  params = JSON.parse paramsJSON
+  return alert "Error - no cylon specified" unless params.name?
+
+  if params.color?
+    selectedLayer.effect(params.name).property("Color").setValue params.color
+
+getEmphasisProperties = ->
+  selectedLayer = NFProject.singleSelectedLayer()
+  return alert "Please select a single layer first" unless selectedLayer?
+
+  allEffects = {}
+  # Using aequery for the first time
+  layer = new aeq.Layer (selectedLayer.$)
+  layer.forEachEffect (e) ->
+    allEffects[e.name] =
+      thickness: e.property("Thickness").value
+      lag: e.property("Lag").value
+      color: e.property("Color").value
+  return allEffects
+
+
+#
+# Transition Stuff
+#
 transitionFadeIn = ->
   theLayer = NFProject.singleSelectedLayer()
   return alert "Please select a single layer first" unless theLayer?
@@ -40,11 +79,26 @@ transitionFadeScaleIn = ->
 transitionFadeScaleOut = ->
   alert "haven't done this yet"
 
+setBlendingMode = (mode) ->
+  if mode is "overlay"
+    modeCode = BlendingMode.OVERLAY
+  else if mode is "multiply"
+    modeCode = BlendingMode.MULTIPLY
+  else if mode is "screen"
+    modeCode = BlendingMode.SCREEN
+  else
+    modeCode = BlendingMode.NORMAL
 
-getCompAndLayerType = ->
+  NFProject.selectedLayers().forEach (layer) =>
+    layer.$.blendingMode = modeCode
+
+getPollingData = ->
+  model = {}
+
   activeComp = NFProject.activeComp()
   selectedLayers = NFProject.selectedLayers()
 
+  # Body Classes
   if activeComp instanceof NFPageComp
     compType = "page-comp"
   else if activeComp instanceof NFPartComp
@@ -61,8 +115,56 @@ getCompAndLayerType = ->
       layerType = "highlight-layer"
     else if singleLayer instanceof NFHighlightControlLayer
       layerType = "highlight-control-layer"
+    else if singleLayer instanceof NFEmphasisLayer
+      layerType = "emphasis-layer"
     else layerType = "misc-layer"
   else layerType = "multiple-layers"
+
+  model.bodyClass = "#{layerType} #{compType}"
+
+  # Selected Layer Names
+  model.selectedLayers = []
+  selectedLayers.forEach (layer) =>
+    model.selectedLayers.push layer.getName()
+
+  # Single Layer Effects
+  if selectedLayers.count() is 1
+    model.effects = {}
+    # Using aequery for the first time
+    singleLayer.aeq().forEachEffect (e) =>
+      model.effects[e.name] = {}
+      if e.matchName.indexOf("AV_") >= 0
+        e.forEach (prop) =>
+          model.effects[e.name][prop.name] = [prop.value]
+
+
+  return JSON.stringify model
+
+getCompAndLayerType = ->
+  activeComp = NFProject.activeComp()
+  selectedLayers = NFProject.selectedLayers()
+
+  if activeComp instanceof NFPageComp
+    compType = "page-comp"
+  else if activeComp instanceof NFPartComp
+    compType = "part-comp"
+  else compType = "misc-comp"
+
+  if selectedLayers.isEmpty()
+    layerType = "no-layer"
+  else
+    if selectedLayers.count() is 1
+      singleLayer = selectedLayers.get(0)
+      if singleLayer instanceof NFPageLayer
+        layerType = "page-layer"
+      else if singleLayer instanceof NFHighlightLayer
+        layerType = "highlight-layer"
+      else if singleLayer instanceof NFHighlightControlLayer
+        layerType = "highlight-control-layer"
+      else if singleLayer instanceof NFEmphasisLayer
+        layerType = "emphasis-layer"
+      else layerType = "misc-layer"
+    else layerType = "multiple-layers"
 
   # retObj =
   #   compType: compType
