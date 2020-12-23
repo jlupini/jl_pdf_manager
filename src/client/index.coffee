@@ -48,6 +48,10 @@ $(document).ready ->
       g = r[1]
       r = r[0]
     '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
+  rgbaToFloatRGB = (arr) ->
+    return [arr[0]/255, arr[1]/255, arr[2]/255]
+  rgbToRGBA255 = (arr) ->
+    return [arr[0]*255, arr[1]*255, arr[2]*255]
 
 
   getPageAnnotations = ->
@@ -126,6 +130,8 @@ $(document).ready ->
       timerCounter++
       if compLayerType.indexOf("page-comp") >= 0
         getPageAnnotations()
+      if compLayerType.indexOf("emphasis-layer") >= 0
+        loadEmphasisPane()
 
   #
   # Bindings
@@ -196,20 +202,42 @@ $(document).ready ->
     hook "setBlendingMode('overlay')"
 
 
-  rgbaToFloatRGB = (arr) ->
-    return [arr[0]/255, arr[1]/255, arr[2]/255]
+  loadEmphasisPane = ->
+    effects = $('body').data("effects")
+    return unless effects.length isnt 0
+
+    # Color
+    dataColor = effects[0].properties.Color.value
+    rgba225Color = rgbToRGBA255(dataColor)
+    console.log "color from data is #{dataColor}"
+    # console.log "setting picker to  #{rgbToRGBA255(dataColor)}"
+    rgbString = "rgb(#{Math.round rgba225Color[0]}, #{Math.round rgba225Color[1]}, #{Math.round rgba225Color[2]})"
+    console.log "setting css to #{rgbString}"
+    # colorPicker.setColor rgba225Color, true
+    unless pickerActive
+      empColorPickButton.css
+        'background-color': rgbString
+
+
   empColorPickButton = $('#emphasizer-panel .color-field')
-  picker = new Picker empColorPickButton[0]
+  colorPicker = new Picker empColorPickButton[0]
+  pickerActive = false
   # console.log "color" + parent.style.backgroundColor
-  picker.setOptions
+  colorPicker.setOptions
     popup: "right"
     alpha: false
     color: empColorPickButton.css "background-color"
+    onOpen: (color) ->
+      pickerActive = yes
+      # Trust the button
+      colorPicker.setColor empColorPickButton.css('background-color')
     onChange: (color) ->
+      console.log "change"
       # Set the picker button's color
       empColorPickButton.css
         'background-color': color.rgbaString
     onDone: (color) ->
+      console.log "done"
       # Set the picker button's color
       empColorPickButton.css
         'background-color': color.rgbaString
@@ -219,8 +247,10 @@ $(document).ready ->
         name: "AV Cylon1"
         color: rgbaToFloatRGB(color.rgba)
       hook "setCylonProperties('#{JSON.stringify cylonParams}')"
-    # onClose: (color) ->
-    #
+    onClose: (color) ->
+      pickerActive = no
+      console.log "close"
+      loadEmphasisPane()
 
 
 

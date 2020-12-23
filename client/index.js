@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var checkForUpdates, compLayerType, csInterface, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, latestAnnotationData, picker, rgbToHex, rgbaToFloatRGB, smartTimer, timerCounter;
+  var checkForUpdates, colorPicker, compLayerType, csInterface, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, latestAnnotationData, loadEmphasisPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -29,6 +29,12 @@ $(document).ready(function() {
       r = r[0];
     }
     return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  };
+  rgbaToFloatRGB = function(arr) {
+    return [arr[0] / 255, arr[1] / 255, arr[2] / 255];
+  };
+  rgbToRGBA255 = function(arr) {
+    return [arr[0] * 255, arr[1] * 255, arr[2] * 255];
   };
   getPageAnnotations = function() {
     var annotationDate, disp;
@@ -125,7 +131,10 @@ $(document).ready(function() {
       $("body").data(data);
       timerCounter++;
       if (compLayerType.indexOf("page-comp") >= 0) {
-        return getPageAnnotations();
+        getPageAnnotations();
+      }
+      if (compLayerType.indexOf("emphasis-layer") >= 0) {
+        return loadEmphasisPane();
       }
     });
   };
@@ -212,22 +221,43 @@ $(document).ready(function() {
     $('#blend-menu').toggle();
     return hook("setBlendingMode('overlay')");
   });
-  rgbaToFloatRGB = function(arr) {
-    return [arr[0] / 255, arr[1] / 255, arr[2] / 255];
+  loadEmphasisPane = function() {
+    var dataColor, effects, rgbString, rgba225Color;
+    effects = $('body').data("effects");
+    if (effects.length === 0) {
+      return;
+    }
+    dataColor = effects[0].properties.Color.value;
+    rgba225Color = rgbToRGBA255(dataColor);
+    console.log("color from data is " + dataColor);
+    rgbString = "rgb(" + (Math.round(rgba225Color[0])) + ", " + (Math.round(rgba225Color[1])) + ", " + (Math.round(rgba225Color[2])) + ")";
+    console.log("setting css to " + rgbString);
+    if (!pickerActive) {
+      return empColorPickButton.css({
+        'background-color': rgbString
+      });
+    }
   };
   empColorPickButton = $('#emphasizer-panel .color-field');
-  picker = new Picker(empColorPickButton[0]);
-  picker.setOptions({
+  colorPicker = new Picker(empColorPickButton[0]);
+  pickerActive = false;
+  colorPicker.setOptions({
     popup: "right",
     alpha: false,
     color: empColorPickButton.css("background-color"),
+    onOpen: function(color) {
+      pickerActive = true;
+      return colorPicker.setColor(empColorPickButton.css('background-color'));
+    },
     onChange: function(color) {
+      console.log("change");
       return empColorPickButton.css({
         'background-color': color.rgbaString
       });
     },
     onDone: function(color) {
       var cylonParams;
+      console.log("done");
       empColorPickButton.css({
         'background-color': color.rgbaString
       });
@@ -236,6 +266,11 @@ $(document).ready(function() {
         color: rgbaToFloatRGB(color.rgba)
       };
       return hook("setCylonProperties('" + (JSON.stringify(cylonParams)) + "')");
+    },
+    onClose: function(color) {
+      pickerActive = false;
+      console.log("close");
+      return loadEmphasisPane();
     }
   });
   return extensionDirectory = csInterface.getSystemPath('extension');

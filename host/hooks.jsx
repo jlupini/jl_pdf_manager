@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, emphasisLayerSelected, getActivePageFile, getCompAndLayerType, getEmphasisProperties, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, emphasisLayerSelected, getActivePageFile, getEmphasisProperties, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 openDocument = function(location) {
   var docRef, fileRef;
@@ -180,53 +180,25 @@ getPollingData = function() {
     };
   })(this));
   if (selectedLayers.count() === 1) {
-    model.effects = {};
+    model.effects = [];
     singleLayer.aeq().forEachEffect((function(_this) {
-      return function(e) {
-        model.effects[e.name] = {};
+      return function(e, i) {
         if (e.matchName.indexOf("AV_") >= 0) {
+          model.effects.push({
+            name: e.name,
+            matchName: e.matchName,
+            properties: {}
+          });
           return e.forEach(function(prop) {
-            return model.effects[e.name][prop.name] = [prop.value];
+            return model.effects[i - 1].properties[prop.name] = {
+              value: prop.value
+            };
           });
         }
       };
     })(this));
   }
   return JSON.stringify(model);
-};
-
-getCompAndLayerType = function() {
-  var activeComp, compType, layerType, selectedLayers, singleLayer;
-  activeComp = NFProject.activeComp();
-  selectedLayers = NFProject.selectedLayers();
-  if (activeComp instanceof NFPageComp) {
-    compType = "page-comp";
-  } else if (activeComp instanceof NFPartComp) {
-    compType = "part-comp";
-  } else {
-    compType = "misc-comp";
-  }
-  if (selectedLayers.isEmpty()) {
-    layerType = "no-layer";
-  } else {
-    if (selectedLayers.count() === 1) {
-      singleLayer = selectedLayers.get(0);
-      if (singleLayer instanceof NFPageLayer) {
-        layerType = "page-layer";
-      } else if (singleLayer instanceof NFHighlightLayer) {
-        layerType = "highlight-layer";
-      } else if (singleLayer instanceof NFHighlightControlLayer) {
-        layerType = "highlight-control-layer";
-      } else if (singleLayer instanceof NFEmphasisLayer) {
-        layerType = "emphasis-layer";
-      } else {
-        layerType = "misc-layer";
-      }
-    } else {
-      layerType = "multiple-layers";
-    }
-  }
-  return layerType + " " + compType;
 };
 
 getActivePageFile = function() {

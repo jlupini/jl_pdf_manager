@@ -129,47 +129,21 @@ getPollingData = ->
 
   # Single Layer Effects
   if selectedLayers.count() is 1
-    model.effects = {}
+    model.effects = []
     # Using aequery for the first time
-    singleLayer.aeq().forEachEffect (e) =>
-      model.effects[e.name] = {}
+    singleLayer.aeq().forEachEffect (e, i) =>
       if e.matchName.indexOf("AV_") >= 0
+        # $.bp()
+        model.effects.push
+          name: e.name
+          matchName: e.matchName
+          properties: {}
         e.forEach (prop) =>
-          model.effects[e.name][prop.name] = [prop.value]
+          model.effects[i-1].properties[prop.name] =
+            value: prop.value
 
 
   return JSON.stringify model
-
-getCompAndLayerType = ->
-  activeComp = NFProject.activeComp()
-  selectedLayers = NFProject.selectedLayers()
-
-  if activeComp instanceof NFPageComp
-    compType = "page-comp"
-  else if activeComp instanceof NFPartComp
-    compType = "part-comp"
-  else compType = "misc-comp"
-
-  if selectedLayers.isEmpty()
-    layerType = "no-layer"
-  else
-    if selectedLayers.count() is 1
-      singleLayer = selectedLayers.get(0)
-      if singleLayer instanceof NFPageLayer
-        layerType = "page-layer"
-      else if singleLayer instanceof NFHighlightLayer
-        layerType = "highlight-layer"
-      else if singleLayer instanceof NFHighlightControlLayer
-        layerType = "highlight-control-layer"
-      else if singleLayer instanceof NFEmphasisLayer
-        layerType = "emphasis-layer"
-      else layerType = "misc-layer"
-    else layerType = "multiple-layers"
-
-  # retObj =
-  #   compType: compType
-  #   layerType: layerType
-  return "#{layerType} #{compType}"
 
 getActivePageFile = ->
   activeComp = NFProject.activeComp()
