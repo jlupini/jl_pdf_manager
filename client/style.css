@@ -41,7 +41,10 @@ body {
   #emphasizer-panel .color-container {
     padding: 2px;
     display: inline-block;
-    background: #757575; }
+    background: #757575;
+    cursor: pointer; }
+    #emphasizer-panel .color-container:hover {
+      background: #8f8e8e; }
   #emphasizer-panel .color-field {
     width: 40px;
     height: 20px;

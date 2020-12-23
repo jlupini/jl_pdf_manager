@@ -120,8 +120,17 @@ $(document).ready(function() {
     console.log("polling (" + (smartTimer != null ? timerCounter : "one-time") + ")...");
     startInterval = new Date();
     return hook("getPollingData()", function(res) {
-      var data;
-      console.log("polling data returned (" + (smartTimer != null ? timerCounter : "one-time") + ") - " + (new Date() - startInterval) + "ms");
+      var data, requestTime;
+      requestTime = new Date() - startInterval;
+      console.log("polling data returned (" + (smartTimer != null ? timerCounter : "one-time") + ") - " + requestTime + "ms");
+      if (res == null) {
+        return console.log("empty result!");
+      }
+      if (requestTime > 250 && (smartTimer != null)) {
+        timerCounter = 0;
+        $('#smart-toggle').click();
+        return console.log("turning off smart updates - request took too long");
+      }
       data = JSON.parse(res);
       if (compLayerType !== data.bodyClass) {
         compLayerType = data.bodyClass;
@@ -157,6 +166,7 @@ $(document).ready(function() {
       return smartTimer = setInterval(checkForUpdates, 500);
     }
   });
+  $('#smart-toggle').click();
   $('#single-fetch').click(function() {
     return getPollingData();
   });
@@ -229,9 +239,7 @@ $(document).ready(function() {
     }
     dataColor = effects[0].properties.Color.value;
     rgba225Color = rgbToRGBA255(dataColor);
-    console.log("color from data is " + dataColor);
     rgbString = "rgb(" + (Math.round(rgba225Color[0])) + ", " + (Math.round(rgba225Color[1])) + ", " + (Math.round(rgba225Color[2])) + ")";
-    console.log("setting css to " + rgbString);
     if (!pickerActive) {
       return empColorPickButton.css({
         'background-color': rgbString
@@ -250,14 +258,12 @@ $(document).ready(function() {
       return colorPicker.setColor(empColorPickButton.css('background-color'));
     },
     onChange: function(color) {
-      console.log("change");
       return empColorPickButton.css({
         'background-color': color.rgbaString
       });
     },
     onDone: function(color) {
       var cylonParams;
-      console.log("done");
       empColorPickButton.css({
         'background-color': color.rgbaString
       });
@@ -265,11 +271,10 @@ $(document).ready(function() {
         name: "AV Cylon1",
         color: rgbaToFloatRGB(color.rgba)
       };
-      return hook("setCylonProperties('" + (JSON.stringify(cylonParams)) + "')");
+      return hook("setEmphasisProperties('" + (JSON.stringify(cylonParams)) + "')");
     },
     onClose: function(color) {
       pickerActive = false;
-      console.log("close");
       return loadEmphasisPane();
     }
   });

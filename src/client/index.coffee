@@ -119,8 +119,17 @@ $(document).ready ->
     console.log "polling (#{if smartTimer? then timerCounter else "one-time"})..."
     startInterval = new Date()
     hook "getPollingData()", (res) ->
-      console.log "polling data returned (#{if smartTimer? then timerCounter else "one-time"}) - #{new Date() - startInterval}ms"
-      # console.log res
+      requestTime = new Date() - startInterval
+      console.log "polling data returned (#{if smartTimer? then timerCounter else "one-time"}) - #{requestTime}ms"
+
+      if not res?
+        return console.log "empty result!"
+
+      if requestTime > 250 and smartTimer?
+        timerCounter = 0
+        $('#smart-toggle').click()
+        return console.log "turning off smart updates - request took too long"
+
       data = JSON.parse res
       if compLayerType isnt data.bodyClass
         compLayerType = data.bodyClass
@@ -151,7 +160,8 @@ $(document).ready ->
       $('#one-page-annotations').addClass("disabled")
       smartTimer = setInterval checkForUpdates, 500
 
-  # $('#smart-toggle').click()
+  # Default the timer to on
+  $('#smart-toggle').click()
 
   $('#single-fetch').click ->
     getPollingData()
@@ -209,11 +219,7 @@ $(document).ready ->
     # Color
     dataColor = effects[0].properties.Color.value
     rgba225Color = rgbToRGBA255(dataColor)
-    console.log "color from data is #{dataColor}"
-    # console.log "setting picker to  #{rgbToRGBA255(dataColor)}"
     rgbString = "rgb(#{Math.round rgba225Color[0]}, #{Math.round rgba225Color[1]}, #{Math.round rgba225Color[2]})"
-    console.log "setting css to #{rgbString}"
-    # colorPicker.setColor rgba225Color, true
     unless pickerActive
       empColorPickButton.css
         'background-color': rgbString
@@ -232,12 +238,10 @@ $(document).ready ->
       # Trust the button
       colorPicker.setColor empColorPickButton.css('background-color')
     onChange: (color) ->
-      console.log "change"
       # Set the picker button's color
       empColorPickButton.css
         'background-color': color.rgbaString
     onDone: (color) ->
-      console.log "done"
       # Set the picker button's color
       empColorPickButton.css
         'background-color': color.rgbaString
@@ -246,10 +250,10 @@ $(document).ready ->
       cylonParams =
         name: "AV Cylon1"
         color: rgbaToFloatRGB(color.rgba)
-      hook "setCylonProperties('#{JSON.stringify cylonParams}')"
+      hook "setEmphasisProperties('#{JSON.stringify cylonParams}')"
     onClose: (color) ->
+      # Any data changes should have been made by now, so let's do the thing
       pickerActive = no
-      console.log "close"
       loadEmphasisPane()
 
 
