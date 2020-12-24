@@ -51,7 +51,7 @@ $(document).ready ->
   rgbaToFloatRGB = (arr) ->
     return [arr[0]/255, arr[1]/255, arr[2]/255]
   rgbToRGBA255 = (arr) ->
-    return [arr[0]*255, arr[1]*255, arr[2]*255]
+    return [Math.round(arr[0]*255), Math.round(arr[1]*255), Math.round(arr[2]*255)]
 
 
   getPageAnnotations = ->
@@ -211,18 +211,68 @@ $(document).ready ->
     $('#blend-menu').toggle()
     hook "setBlendingMode('overlay')"
 
+  $('#emphasizer-panel .slider-container input').change ->
+    $(this).siblings(".value").text($(this).val())
+
+  $('#emphasis-list').on 'click', 'li', ->
+    $('#emphasis-list li.active').removeClass('active')
+    $(this).addClass('active')
+    loadEmphasisPane()
+
+  $('#emphasizer-panel button.apply-to-all').click ->
+    effects = $('body').data().effects
+    for item in effects
+      emphParams =
+        name: item.name
+        color: $('#emphasis-list li.active').data().properties.Color.value
+      hook "setEmphasisProperties('#{JSON.stringify emphParams}')"
+
+    loadEmphasisPane()
 
   loadEmphasisPane = ->
-    effects = $('body').data("effects")
-    return unless effects.length isnt 0
+    data = $('body').data()
+    sameLayer = no
+
+    # Title
+    $title = $("#emphasis-title")
+    oldTitle = $title.text()
+    if oldTitle is data.selectedLayers[0]
+      sameLayer = yes
+    else
+      $title.text data.selectedLayers[0]
+
+    # List
+    $list = $('#emphasis-list')
+    if sameLayer
+      $activeItem = $list.find('li.active')
+      if $activeItem? and $activeItem.data()?
+        activeItemName = $activeItem.data().name
+      else
+        activeItemName = null
+    $list.empty()
+    if data.effects.length isnt 0
+      # list.append "<li class='all'>All</li>"
+      for effect, i in data.effects
+        newItem = $("<li>#{effect.name}</li>").appendTo $list
+        newItem.data effect
+
+        if (i is 0 and not activeItemName?) or (effect.name is activeItemName)
+          newItem.addClass("active")
+        bullet = $("<span class='bullet'>&#9632;</span>").prependTo newItem
+        bulletColor = rgbToHex rgbToRGBA255(effect.properties.Color.value.slice(0,3))
+        bullet.css "color", bulletColor
+
+    else
+      $list.append "<li class='none'>No Emphasizers</li>"
 
     # Color
-    dataColor = effects[0].properties.Color.value
-    rgba225Color = rgbToRGBA255(dataColor)
-    rgbString = "rgb(#{Math.round rgba225Color[0]}, #{Math.round rgba225Color[1]}, #{Math.round rgba225Color[2]})"
-    unless pickerActive
-      empColorPickButton.css
-        'background-color': rgbString
+    if data.effects.length isnt 0
+      dataColor = $list.find('li.active').data().properties.Color.value
+      rgba225Color = rgbToRGBA255(dataColor)
+      rgbString = "rgb(#{rgba225Color[0]}, #{rgba225Color[1]}, #{rgba225Color[2]})"
+      unless pickerActive
+        empColorPickButton.css
+          'background-color': rgbString
 
 
   empColorPickButton = $('#emphasizer-panel .color-field')
@@ -230,7 +280,7 @@ $(document).ready ->
   pickerActive = false
   # console.log "color" + parent.style.backgroundColor
   colorPicker.setOptions
-    popup: "right"
+    popup: "top"
     alpha: false
     color: empColorPickButton.css "background-color"
     onOpen: (color) ->
@@ -246,11 +296,10 @@ $(document).ready ->
       empColorPickButton.css
         'background-color': color.rgbaString
       # Set the actual cylon color
-      ## FIXME: This only works for the first cylon right now
-      cylonParams =
-        name: "AV Cylon1"
+      emphParams =
+        name: $('#emphasis-list li.active').data().name
         color: rgbaToFloatRGB(color.rgba)
-      hook "setEmphasisProperties('#{JSON.stringify cylonParams}')"
+      hook "setEmphasisProperties('#{JSON.stringify emphParams}')"
     onClose: (color) ->
       # Any data changes should have been made by now, so let's do the thing
       pickerActive = no

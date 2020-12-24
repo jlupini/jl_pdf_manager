@@ -34,7 +34,7 @@ $(document).ready(function() {
     return [arr[0] / 255, arr[1] / 255, arr[2] / 255];
   };
   rgbToRGBA255 = function(arr) {
-    return [arr[0] * 255, arr[1] * 255, arr[2] * 255];
+    return [Math.round(arr[0] * 255), Math.round(arr[1] * 255), Math.round(arr[2] * 255)];
   };
   getPageAnnotations = function() {
     var annotationDate, disp;
@@ -231,26 +231,80 @@ $(document).ready(function() {
     $('#blend-menu').toggle();
     return hook("setBlendingMode('overlay')");
   });
-  loadEmphasisPane = function() {
-    var dataColor, effects, rgbString, rgba225Color;
-    effects = $('body').data("effects");
-    if (effects.length === 0) {
-      return;
+  $('#emphasizer-panel .slider-container input').change(function() {
+    return $(this).siblings(".value").text($(this).val());
+  });
+  $('#emphasis-list').on('click', 'li', function() {
+    $('#emphasis-list li.active').removeClass('active');
+    $(this).addClass('active');
+    return loadEmphasisPane();
+  });
+  $('#emphasizer-panel button.apply-to-all').click(function() {
+    var effects, emphParams, item, j, len;
+    effects = $('body').data().effects;
+    for (j = 0, len = effects.length; j < len; j++) {
+      item = effects[j];
+      emphParams = {
+        name: item.name,
+        color: $('#emphasis-list li.active').data().properties.Color.value
+      };
+      hook("setEmphasisProperties('" + (JSON.stringify(emphParams)) + "')");
     }
-    dataColor = effects[0].properties.Color.value;
-    rgba225Color = rgbToRGBA255(dataColor);
-    rgbString = "rgb(" + (Math.round(rgba225Color[0])) + ", " + (Math.round(rgba225Color[1])) + ", " + (Math.round(rgba225Color[2])) + ")";
-    if (!pickerActive) {
-      return empColorPickButton.css({
-        'background-color': rgbString
-      });
+    return loadEmphasisPane();
+  });
+  loadEmphasisPane = function() {
+    var $activeItem, $list, $title, activeItemName, bullet, bulletColor, data, dataColor, effect, i, j, len, newItem, oldTitle, ref, rgbString, rgba225Color, sameLayer;
+    data = $('body').data();
+    sameLayer = false;
+    $title = $("#emphasis-title");
+    oldTitle = $title.text();
+    if (oldTitle === data.selectedLayers[0]) {
+      sameLayer = true;
+    } else {
+      $title.text(data.selectedLayers[0]);
+    }
+    $list = $('#emphasis-list');
+    if (sameLayer) {
+      $activeItem = $list.find('li.active');
+      if (($activeItem != null) && ($activeItem.data() != null)) {
+        activeItemName = $activeItem.data().name;
+      } else {
+        activeItemName = null;
+      }
+    }
+    $list.empty();
+    if (data.effects.length !== 0) {
+      ref = data.effects;
+      for (i = j = 0, len = ref.length; j < len; i = ++j) {
+        effect = ref[i];
+        newItem = $("<li>" + effect.name + "</li>").appendTo($list);
+        newItem.data(effect);
+        if ((i === 0 && (activeItemName == null)) || (effect.name === activeItemName)) {
+          newItem.addClass("active");
+        }
+        bullet = $("<span class='bullet'>&#9632;</span>").prependTo(newItem);
+        bulletColor = rgbToHex(rgbToRGBA255(effect.properties.Color.value.slice(0, 3)));
+        bullet.css("color", bulletColor);
+      }
+    } else {
+      $list.append("<li class='none'>No Emphasizers</li>");
+    }
+    if (data.effects.length !== 0) {
+      dataColor = $list.find('li.active').data().properties.Color.value;
+      rgba225Color = rgbToRGBA255(dataColor);
+      rgbString = "rgb(" + rgba225Color[0] + ", " + rgba225Color[1] + ", " + rgba225Color[2] + ")";
+      if (!pickerActive) {
+        return empColorPickButton.css({
+          'background-color': rgbString
+        });
+      }
     }
   };
   empColorPickButton = $('#emphasizer-panel .color-field');
   colorPicker = new Picker(empColorPickButton[0]);
   pickerActive = false;
   colorPicker.setOptions({
-    popup: "right",
+    popup: "top",
     alpha: false,
     color: empColorPickButton.css("background-color"),
     onOpen: function(color) {
@@ -263,15 +317,15 @@ $(document).ready(function() {
       });
     },
     onDone: function(color) {
-      var cylonParams;
+      var emphParams;
       empColorPickButton.css({
         'background-color': color.rgbaString
       });
-      cylonParams = {
-        name: "AV Cylon1",
+      emphParams = {
+        name: $('#emphasis-list li.active').data().name,
         color: rgbaToFloatRGB(color.rgba)
       };
-      return hook("setEmphasisProperties('" + (JSON.stringify(cylonParams)) + "')");
+      return hook("setEmphasisProperties('" + (JSON.stringify(emphParams)) + "')");
     },
     onClose: function(color) {
       pickerActive = false;

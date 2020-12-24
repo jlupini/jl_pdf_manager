@@ -74,8 +74,36 @@
 	</div>
 
 	<div id="emphasizer-panel">
+		<div id="emphasis-title"></div>
+		<ul id="emphasis-list">
+		</ul>
 		<div class="color-container">
 			<div class="color-field"></div>
+		</div>
+		<div class="slider-container">
+			<div class="thickness input-container">
+				<label for="thickness-slider">Thickness</label>
+				<input type="range" min="1" max="150" value="75" class="slider" id="thickness-slider" />
+				<span class="value">50</span><span class="units">px</span>
+			</div>
+
+			<div class="duration input-container">
+				<label for="duration-slider">Duration</label>
+				<input type="range" min="1" max="100" value="50" class="slider" id="duration-slider" />
+				<span class="value">50</span><span class="units">s</span>
+			</div>
+
+			<div class="lag input-container">
+				<label for="lag-slider">Lag</label>
+				<input type="range" min="1" max="100" value="50" class="slider" id="lag-slider" />
+				<span class="value">50</span><span class="units">s</span>
+			</div>
+		</div>
+		<div class="buttons">
+			<button class="apply-to-all">Apply to All</button>
+			<button class="duplicate">Duplicate</button>
+			<button class="select-target">Find Target</button>
+			<button class="apply-to-all">New</button>
 		</div>
 	</div>
 
