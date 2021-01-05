@@ -35,7 +35,13 @@ try {
       return alert("Error - no cylon specified");
     }
     if (params.color != null) {
-      return selectedLayer.effect(params.name).property("Color").setValue(params.color);
+      selectedLayer.effect(params.name).property("Color").setValue(params.color);
+    }
+    if (params.thickness != null) {
+      selectedLayer.effect(params.name).property("Thickness").setValue(params.thickness);
+    }
+    if (params.lag != null) {
+      return selectedLayer.effect(params.name).property("Lag").setValue(params.lag);
     }
   };
   getEmphasisProperties = function() {

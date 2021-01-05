@@ -211,8 +211,34 @@ $(document).ready ->
     $('#blend-menu').toggle()
     hook "setBlendingMode('overlay')"
 
+
+  # # print all events on an element
+  # getAllEvents = (element) ->
+  #   result = []
+  #   for key of element
+  #     if key.indexOf('on') == 0
+  #       result.push key.slice(2)
+  #   result.join ' '
+  #
+  # el.bind getAllEvents(el[0]), (e) ->
+  #
+  #   console.log e
+
+  isChangingValue = no
+  $('#emphasizer-panel .slider-container input').on "pointerdown", ->
+    isChangingValue = yes
+
   $('#emphasizer-panel .slider-container input').change ->
+    isChangingValue = no
     $(this).siblings(".value").text($(this).val())
+
+    if $(this).is("#thickness-slider")
+      thicknessValue = $(this).val()
+      emphParams =
+        name: $('#emphasis-list li.active').data().name
+        thickness: thicknessValue
+      hook "setEmphasisProperties('#{JSON.stringify emphParams}')"
+
 
   $('#emphasis-list').on 'click', 'li', ->
     $('#emphasis-list li.active').removeClass('active')
@@ -265,14 +291,21 @@ $(document).ready ->
     else
       $list.append "<li class='none'>No Emphasizers</li>"
 
-    # Color
     if data.effects.length isnt 0
+      # Color
       dataColor = $list.find('li.active').data().properties.Color.value
       rgba225Color = rgbToRGBA255(dataColor)
       rgbString = "rgb(#{rgba225Color[0]}, #{rgba225Color[1]}, #{rgba225Color[2]})"
       unless pickerActive
         empColorPickButton.css
           'background-color': rgbString
+
+      # Thickness
+      unless isChangingValue
+        dataThickness = $list.find('li.active').data().properties.Thickness.value
+        $thicknessSlider = $('#thickness-slider')
+        $thicknessSlider.val dataThickness
+        $thicknessSlider.siblings(".value").text dataThickness
 
 
   empColorPickButton = $('#emphasizer-panel .color-field')

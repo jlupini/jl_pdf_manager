@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var checkForUpdates, colorPicker, compLayerType, csInterface, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, latestAnnotationData, loadEmphasisPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var checkForUpdates, colorPicker, compLayerType, csInterface, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -231,8 +231,22 @@ $(document).ready(function() {
     $('#blend-menu').toggle();
     return hook("setBlendingMode('overlay')");
   });
+  isChangingValue = false;
+  $('#emphasizer-panel .slider-container input').on("pointerdown", function() {
+    return isChangingValue = true;
+  });
   $('#emphasizer-panel .slider-container input').change(function() {
-    return $(this).siblings(".value").text($(this).val());
+    var emphParams, thicknessValue;
+    isChangingValue = false;
+    $(this).siblings(".value").text($(this).val());
+    if ($(this).is("#thickness-slider")) {
+      thicknessValue = $(this).val();
+      emphParams = {
+        name: $('#emphasis-list li.active').data().name,
+        thickness: thicknessValue
+      };
+      return hook("setEmphasisProperties('" + (JSON.stringify(emphParams)) + "')");
+    }
   });
   $('#emphasis-list').on('click', 'li', function() {
     $('#emphasis-list li.active').removeClass('active');
@@ -253,7 +267,7 @@ $(document).ready(function() {
     return loadEmphasisPane();
   });
   loadEmphasisPane = function() {
-    var $activeItem, $list, $title, activeItemName, bullet, bulletColor, data, dataColor, effect, i, j, len, newItem, oldTitle, ref, rgbString, rgba225Color, sameLayer;
+    var $activeItem, $list, $thicknessSlider, $title, activeItemName, bullet, bulletColor, data, dataColor, dataThickness, effect, i, j, len, newItem, oldTitle, ref, rgbString, rgba225Color, sameLayer;
     data = $('body').data();
     sameLayer = false;
     $title = $("#emphasis-title");
@@ -294,9 +308,15 @@ $(document).ready(function() {
       rgba225Color = rgbToRGBA255(dataColor);
       rgbString = "rgb(" + rgba225Color[0] + ", " + rgba225Color[1] + ", " + rgba225Color[2] + ")";
       if (!pickerActive) {
-        return empColorPickButton.css({
+        empColorPickButton.css({
           'background-color': rgbString
         });
+      }
+      if (!isChangingValue) {
+        dataThickness = $list.find('li.active').data().properties.Thickness.value;
+        $thicknessSlider = $('#thickness-slider');
+        $thicknessSlider.val(dataThickness);
+        return $thicknessSlider.siblings(".value").text(dataThickness);
       }
     }
   };

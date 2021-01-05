@@ -30,6 +30,10 @@ try
 
     if params.color?
       selectedLayer.effect(params.name).property("Color").setValue params.color
+    if params.thickness?
+      selectedLayer.effect(params.name).property("Thickness").setValue params.thickness
+    if params.lag?
+      selectedLayer.effect(params.name).property("Lag").setValue params.lag
 
   getEmphasisProperties = ->
     selectedLayer = NFProject.singleSelectedLayer()
