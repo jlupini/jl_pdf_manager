@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var checkForUpdates, colorPicker, compLayerType, csInterface, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -36,6 +36,15 @@ $(document).ready(function() {
   rgbToRGBA255 = function(arr) {
     return [Math.round(arr[0] * 255), Math.round(arr[1] * 255), Math.round(arr[2] * 255)];
   };
+  displayError = function(message) {
+    var $bar;
+    $bar = $('#error-bar');
+    $bar.text("ERROR: " + message);
+    return $bar.show();
+  };
+  $('#error-bar').click(function() {
+    return $(this).hide();
+  });
   getPageAnnotations = function() {
     var annotationDate, disp;
     disp = $("#annotation-display");
@@ -47,7 +56,7 @@ $(document).ready(function() {
           var url;
           console.log("annotation hook returned - " + (new Date() - annotationDate) + "ms");
           console.log(result);
-          if (result !== "null") {
+          if (result !== "null" && result !== "" && result !== null) {
             url = 'http://localhost:3200/annotationData';
             return $.ajax({
               type: 'GET',
@@ -131,19 +140,27 @@ $(document).ready(function() {
         $('#smart-toggle').click();
         return console.log("turning off smart updates - request took too long");
       }
-      data = JSON.parse(res);
-      if (compLayerType !== data.bodyClass) {
-        compLayerType = data.bodyClass;
-        $("body").removeClass();
-        $("body").addClass(compLayerType);
-      }
-      $("body").data(data);
-      timerCounter++;
-      if (compLayerType.indexOf("page-comp") >= 0) {
-        getPageAnnotations();
-      }
-      if (compLayerType.indexOf("emphasis-layer") >= 0) {
-        return loadEmphasisPane();
+      if (res.length === 0) {
+        displayError("got nothing back from polling hook!");
+        return $("body").removeClass();
+      } else {
+        data = JSON.parse(res);
+        if (compLayerType !== data.bodyClass) {
+          compLayerType = data.bodyClass;
+          $("body").removeClass();
+          $("body").addClass(compLayerType);
+        }
+        $("body").data(data);
+        timerCounter++;
+        if (compLayerType.indexOf("page-comp") >= 0) {
+          getPageAnnotations();
+        }
+        if (compLayerType.indexOf("emphasis-layer") >= 0) {
+          loadEmphasisPane();
+        }
+        if (compLayerType.indexOf("part-comp") >= 0) {
+          return loadLayoutPane();
+        }
       }
     });
   };
@@ -350,6 +367,67 @@ $(document).ready(function() {
     onClose: function(color) {
       pickerActive = false;
       return loadEmphasisPane();
+    }
+  });
+  loadLayoutPane = function() {
+    var $list;
+    $list = $("#selector-list");
+    if ($list.children().length === 0) {
+      return hook("getFullPDFTree()", function(res) {
+        var $newPDFItem, $newPageItem, $newShapeItem, $pageList, $shapeList, j, len, pageItem, pdfItem, ref, results, selectorData, shapeItem;
+        selectorData = JSON.parse(res);
+        ref = selectorData.pdfs;
+        results = [];
+        for (j = 0, len = ref.length; j < len; j++) {
+          pdfItem = ref[j];
+          $newPDFItem = $("<li>" + pdfItem.displayName + "</li>").appendTo($list);
+          $newPDFItem.data(pdfItem);
+          $pageList = $("<ul></ul>").appendTo($newPDFItem);
+          results.push((function() {
+            var k, len1, ref1, results1;
+            ref1 = pdfItem.pages;
+            results1 = [];
+            for (k = 0, len1 = ref1.length; k < len1; k++) {
+              pageItem = ref1[k];
+              $newPageItem = $("<li>" + pageItem.displayName + "</li>").appendTo($pageList);
+              $newPageItem.data(pageItem);
+              if (pageItem.shapes.length > 0) {
+                $shapeList = $("<ul></ul>").appendTo($newPageItem);
+                results1.push((function() {
+                  var l, len2, ref2, results2;
+                  ref2 = pageItem.shapes;
+                  results2 = [];
+                  for (l = 0, len2 = ref2.length; l < len2; l++) {
+                    shapeItem = ref2[l];
+                    $newShapeItem = $("<li>" + shapeItem.displayName + "</li>").appendTo($shapeList);
+                    results2.push($newShapeItem.data(shapeItem));
+                  }
+                  return results2;
+                })());
+              } else {
+                results1.push(void 0);
+              }
+            }
+            return results1;
+          })());
+        }
+        return results;
+      });
+    }
+  };
+  $('#selector-list').on('click', 'li', function(event) {
+    event.stopPropagation();
+    $('#selector-list li').removeClass('active');
+    return $(this).addClass('active');
+  });
+  $('#layout-panel .fullscreen-title').click(function(e) {
+    var $activeItem, model;
+    $activeItem = $('#selector-list li.active');
+    if (($activeItem != null ? $activeItem.data().type : void 0) === "pageComp") {
+      model = {
+        target: $activeItem.data()
+      };
+      return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }
   });
   return extensionDirectory = csInterface.getSystemPath('extension');

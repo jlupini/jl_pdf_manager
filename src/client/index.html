@@ -10,6 +10,7 @@
 	<script src="https://unpkg.com/vanilla-picker@2"></script>
 </head>
 <body class="">
+	<div id="error-bar"></div>
 	<!-- <h1>PDF Connector</h1> -->
 	<div id="tab-bar">
 		<div class="tab" id="tab-page-comp">Page Comp</div>
@@ -28,6 +29,16 @@
 
 	<div id="annotation-display">
 		<p class='welcome-message'>When in a page comp, click 'Manually Fetch Annotations' to load the PDF annotations for that file. For automatic fetching, click the 'toggle smart updates' button.</p>
+	</div>
+
+	<div id="layout-panel" class="transient-panel">
+		<div id="layout-title" class="panel-title">Animation Layout</div>
+		<div id="selector">
+			<ul id="selector-list"></ul>
+		</div>
+		<div class="buttons">
+			<button class="fullscreen-title">Fullscreen Title</button>
+		</div>
 	</div>
 
 	<!-- <div id="transition-panel">
@@ -52,7 +63,7 @@
 		</div>
 	</div> -->
 
-	<div id="layer-controls">
+	<!-- <div id="layer-controls">
 		<div id="blend-modes">
 			<button class="blend-button">Blend Mode</button>
 			<div id="blend-menu" class="menu">
@@ -64,28 +75,17 @@
 		</div>
 		<div id="emphasis-controls">
 			<button class="emphasizer-button">Emphasizer</button>
-			<!-- <div id="blend-menu" class="menu">
-				<div id="blend-normal-button" class="choice">Normal</div>
-				<div id="blend-overlay-button" class="choice">Overlay</div>
-				<div id="blend-multiply-button" class="choice">Multiply</div>
-				<div id="blend-screen-button" class="choice">Screen</div>
-			</div> -->
 		</div>
-	</div>
+	</div> -->
 
-	<div id="emphasizer-panel">
-		<div id="emphasis-title"></div>
+	<div id="emphasizer-panel" class="transient-panel">
+		<div id="emphasis-title" class="panel-title"></div>
 		<ul id="emphasis-list">
 		</ul>
 		<div class="color-container">
 			<div class="color-field"></div>
 		</div>
 		<div class="slider-container">
-			<div class="test input-container">
-				<label for="test-slider">Test</label>
-				<div class="slider" id="test-slider" />
-				<span class="value">50</span><span class="units">px</span>
-			</div>
 
 			<div class="thickness input-container">
 				<label for="thickness-slider">Thickness</label>

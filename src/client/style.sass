@@ -59,6 +59,8 @@ body
     #annotation-display
       display: block
   &.part-comp
+    #layout-panel
+      display: block
     #tab-part-comp
       color: red
   &.highlight-layer
@@ -71,13 +73,17 @@ body
     #tab-misc-comp
       color: red
 
+#error-bar
+  display: none
+  width: 100%
+  padding: 15px
+  background: #8c3333
+  font-weight: bold
+
 #tab-bar
   display: none
 
-#annotation-display
-  display: none
-
-#emphasizer-panel
+.transient-panel
   display: none
   width: auto
   height: auto
@@ -86,9 +92,32 @@ body
   background: $midbgColor
   color: #aaaaaa
 
-  #emphasis-title
+  .panel-title
     font-weight: bold
     color: #cccccc
+
+#layout-panel
+  display: none
+
+  #selector
+    max-height: 200px
+    overflow: scroll
+
+  ul
+    font-size: 12px
+    padding: 0 0 0 10px
+    list-style-type: none
+
+    li.active
+      font-weight: bold
+
+      li
+        font-weight: normal
+
+#annotation-display
+  display: none
+
+#emphasizer-panel
 
   #emphasis-list
     list-style-type: none

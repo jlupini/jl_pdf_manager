@@ -97,62 +97,128 @@ try
     NFProject.selectedLayers().forEach (layer) =>
       layer.$.blendingMode = modeCode
 
+  runLayoutCommand = (model) ->
+    activeComp = NFProject.activeComp()
+    activeComp.runLayoutCommand model
+
+  getFullPDFTree = ->
+    # Make an object with all the PDFs
+    contentTree = {}
+    outputTree =
+      pdfs: []
+    allPageComps = NFProject.allPageComps()
+
+    for pageComp in allPageComps
+      pdfNumber = pageComp.getPDFNumber()
+
+      contentTree[pdfNumber] = [] unless contentTree[pdfNumber]?
+      contentTree[pdfNumber].push pageComp
+
+    for key of contentTree
+      pdfObj = NFPDF.fromPDFNumber key
+      pageCompArr = contentTree[key]
+
+      thisPDF =
+        id: key
+        type: "pdf"
+        displayName: "PDF #{key}"
+        pages: []
+
+      for pageComp in pageCompArr
+        pageNumber = pageComp.getPageNumber()
+
+        thisPage =
+          id: pageComp.getID()
+          type: "pageComp"
+          pageNumber: pageNumber
+          displayName: "Page #{pageNumber}"
+          compName: pageComp.getName()
+          shapes: []
+
+        # Collect only the shape layers
+        pageLayers = pageComp.allLayers()
+        shapeLayers = new NFLayerCollection
+        pageLayers.forEach (layer) =>
+          shapeLayers.add layer if layer.$ instanceof ShapeLayer
+
+        unless shapeLayers.isEmpty()
+          shapeLayers.forEach (shapeLayer) =>
+            thisShape =
+              type: "shape"
+              layerName: shapeLayer.$.name
+
+            if shapeLayer instanceof NFHighlightLayer
+              thisShape.displayName = shapeLayer.$.name + " (HL)"
+              thisShape.highlight = true
+            else
+              thisShape.displayName = shapeLayer.$.name + " (Shape)"
+              thisShape.highlight = false
+
+            thisPage.shapes.push thisShape
+
+        thisPDF.pages.push thisPage
+
+      outputTree.pdfs.push thisPDF
+
+    return JSON.stringify outputTree
+
+
   getPollingData = ->
     model = {}
-
     activeComp = NFProject.activeComp()
-    selectedLayers = NFProject.selectedLayers()
+    if activeComp?
+      # Body Classes
+      if activeComp instanceof NFPageComp
+        compType = "page-comp"
+      else if activeComp instanceof NFPartComp
+        compType = "part-comp"
+      else compType = "misc-comp"
 
-    # Body Classes
-    if activeComp instanceof NFPageComp
-      compType = "page-comp"
-    else if activeComp instanceof NFPartComp
-      compType = "part-comp"
-    else compType = "misc-comp"
+      selectedLayers = NFProject.selectedLayers()
+      if selectedLayers.isEmpty()
+        layerType = "no-layer"
+      else if selectedLayers.count() is 1
+        singleLayer = selectedLayers.get(0)
+        if singleLayer instanceof NFPageLayer
+          layerType = "page-layer"
+        else if singleLayer instanceof NFHighlightLayer
+          layerType = "highlight-layer"
+        else if singleLayer instanceof NFHighlightControlLayer
+          layerType = "highlight-control-layer"
+        else if singleLayer instanceof NFEmphasisLayer
+          layerType = "emphasis-layer"
+        else layerType = "misc-layer"
+      else layerType = "multiple-layers"
 
-    if selectedLayers.isEmpty()
-      layerType = "no-layer"
-    else if selectedLayers.count() is 1
-      singleLayer = selectedLayers.get(0)
-      if singleLayer instanceof NFPageLayer
-        layerType = "page-layer"
-      else if singleLayer instanceof NFHighlightLayer
-        layerType = "highlight-layer"
-      else if singleLayer instanceof NFHighlightControlLayer
-        layerType = "highlight-control-layer"
-      else if singleLayer instanceof NFEmphasisLayer
-        layerType = "emphasis-layer"
-      else layerType = "misc-layer"
-    else layerType = "multiple-layers"
+      model.bodyClass = "#{layerType} #{compType}"
 
-    model.bodyClass = "#{layerType} #{compType}"
+      # Selected Layer Names
+      model.selectedLayers = []
+      selectedLayers.forEach (layer) =>
+        model.selectedLayers.push layer.getName()
 
-    # Selected Layer Names
-    model.selectedLayers = []
-    selectedLayers.forEach (layer) =>
-      model.selectedLayers.push layer.getName()
-
-    # Single Layer Effects
-    if selectedLayers.count() is 1
-      model.effects = []
-      # Using aequery for the first time
-      singleLayer.aeq().forEachEffect (e, i) =>
-        if e.matchName.indexOf("AV_") >= 0
-          # $.bp()
-          model.effects.push
-            name: e.name
-            matchName: e.matchName
-            properties: {}
-          e.forEach (prop) =>
-            model.effects[i-1].properties[prop.name] =
-              value: prop.value
-
+      # Single Layer Effects
+      if selectedLayers.count() is 1
+        model.effects = []
+        # Using aequery for the first time
+        singleLayer.aeq().forEachEffect (e, i) =>
+          if e.matchName.indexOf("AV_") >= 0
+            # $.bp()
+            model.effects.push
+              name: e.name
+              matchName: e.matchName
+              properties: {}
+            e.forEach (prop) =>
+              model.effects[i-1].properties[prop.name] =
+                value: prop.value
+    else
+      model.bodyClass = "no-comp"
 
     return JSON.stringify model
 
   getActivePageFile = ->
     activeComp = NFProject.activeComp()
-    if activeComp instanceof NFPageComp
+    if activeComp instanceof NFPageComp and activeComp.getPDFLayer().$.source?
       return activeComp.getPDFLayer().$.source.file.fsName
     else return null
 

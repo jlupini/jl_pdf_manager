@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, getActivePageFile, getEmphasisProperties, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, runLayoutCommand, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 try {
   openDocument = function(location) {
@@ -134,68 +134,146 @@ try {
       };
     })(this));
   };
+  runLayoutCommand = function(model) {
+    var activeComp;
+    activeComp = NFProject.activeComp();
+    return activeComp.runLayoutCommand(model);
+  };
+  getFullPDFTree = function() {
+    var allPageComps, contentTree, j, k, key, len, len1, outputTree, pageComp, pageCompArr, pageLayers, pageNumber, pdfNumber, pdfObj, shapeLayers, thisPDF, thisPage;
+    contentTree = {};
+    outputTree = {
+      pdfs: []
+    };
+    allPageComps = NFProject.allPageComps();
+    for (j = 0, len = allPageComps.length; j < len; j++) {
+      pageComp = allPageComps[j];
+      pdfNumber = pageComp.getPDFNumber();
+      if (contentTree[pdfNumber] == null) {
+        contentTree[pdfNumber] = [];
+      }
+      contentTree[pdfNumber].push(pageComp);
+    }
+    for (key in contentTree) {
+      pdfObj = NFPDF.fromPDFNumber(key);
+      pageCompArr = contentTree[key];
+      thisPDF = {
+        id: key,
+        type: "pdf",
+        displayName: "PDF " + key,
+        pages: []
+      };
+      for (k = 0, len1 = pageCompArr.length; k < len1; k++) {
+        pageComp = pageCompArr[k];
+        pageNumber = pageComp.getPageNumber();
+        thisPage = {
+          id: pageComp.getID(),
+          type: "pageComp",
+          pageNumber: pageNumber,
+          displayName: "Page " + pageNumber,
+          compName: pageComp.getName(),
+          shapes: []
+        };
+        pageLayers = pageComp.allLayers();
+        shapeLayers = new NFLayerCollection;
+        pageLayers.forEach((function(_this) {
+          return function(layer) {
+            if (layer.$ instanceof ShapeLayer) {
+              return shapeLayers.add(layer);
+            }
+          };
+        })(this));
+        if (!shapeLayers.isEmpty()) {
+          shapeLayers.forEach((function(_this) {
+            return function(shapeLayer) {
+              var thisShape;
+              thisShape = {
+                type: "shape",
+                layerName: shapeLayer.$.name
+              };
+              if (shapeLayer instanceof NFHighlightLayer) {
+                thisShape.displayName = shapeLayer.$.name + " (HL)";
+                thisShape.highlight = true;
+              } else {
+                thisShape.displayName = shapeLayer.$.name + " (Shape)";
+                thisShape.highlight = false;
+              }
+              return thisPage.shapes.push(thisShape);
+            };
+          })(this));
+        }
+        thisPDF.pages.push(thisPage);
+      }
+      outputTree.pdfs.push(thisPDF);
+    }
+    return JSON.stringify(outputTree);
+  };
   getPollingData = function() {
     var activeComp, compType, layerType, model, selectedLayers, singleLayer;
     model = {};
     activeComp = NFProject.activeComp();
-    selectedLayers = NFProject.selectedLayers();
-    if (activeComp instanceof NFPageComp) {
-      compType = "page-comp";
-    } else if (activeComp instanceof NFPartComp) {
-      compType = "part-comp";
-    } else {
-      compType = "misc-comp";
-    }
-    if (selectedLayers.isEmpty()) {
-      layerType = "no-layer";
-    } else if (selectedLayers.count() === 1) {
-      singleLayer = selectedLayers.get(0);
-      if (singleLayer instanceof NFPageLayer) {
-        layerType = "page-layer";
-      } else if (singleLayer instanceof NFHighlightLayer) {
-        layerType = "highlight-layer";
-      } else if (singleLayer instanceof NFHighlightControlLayer) {
-        layerType = "highlight-control-layer";
-      } else if (singleLayer instanceof NFEmphasisLayer) {
-        layerType = "emphasis-layer";
+    if (activeComp != null) {
+      if (activeComp instanceof NFPageComp) {
+        compType = "page-comp";
+      } else if (activeComp instanceof NFPartComp) {
+        compType = "part-comp";
       } else {
-        layerType = "misc-layer";
+        compType = "misc-comp";
       }
-    } else {
-      layerType = "multiple-layers";
-    }
-    model.bodyClass = layerType + " " + compType;
-    model.selectedLayers = [];
-    selectedLayers.forEach((function(_this) {
-      return function(layer) {
-        return model.selectedLayers.push(layer.getName());
-      };
-    })(this));
-    if (selectedLayers.count() === 1) {
-      model.effects = [];
-      singleLayer.aeq().forEachEffect((function(_this) {
-        return function(e, i) {
-          if (e.matchName.indexOf("AV_") >= 0) {
-            model.effects.push({
-              name: e.name,
-              matchName: e.matchName,
-              properties: {}
-            });
-            return e.forEach(function(prop) {
-              return model.effects[i - 1].properties[prop.name] = {
-                value: prop.value
-              };
-            });
-          }
+      selectedLayers = NFProject.selectedLayers();
+      if (selectedLayers.isEmpty()) {
+        layerType = "no-layer";
+      } else if (selectedLayers.count() === 1) {
+        singleLayer = selectedLayers.get(0);
+        if (singleLayer instanceof NFPageLayer) {
+          layerType = "page-layer";
+        } else if (singleLayer instanceof NFHighlightLayer) {
+          layerType = "highlight-layer";
+        } else if (singleLayer instanceof NFHighlightControlLayer) {
+          layerType = "highlight-control-layer";
+        } else if (singleLayer instanceof NFEmphasisLayer) {
+          layerType = "emphasis-layer";
+        } else {
+          layerType = "misc-layer";
+        }
+      } else {
+        layerType = "multiple-layers";
+      }
+      model.bodyClass = layerType + " " + compType;
+      model.selectedLayers = [];
+      selectedLayers.forEach((function(_this) {
+        return function(layer) {
+          return model.selectedLayers.push(layer.getName());
         };
       })(this));
+      if (selectedLayers.count() === 1) {
+        model.effects = [];
+        singleLayer.aeq().forEachEffect((function(_this) {
+          return function(e, i) {
+            if (e.matchName.indexOf("AV_") >= 0) {
+              model.effects.push({
+                name: e.name,
+                matchName: e.matchName,
+                properties: {}
+              });
+              return e.forEach(function(prop) {
+                return model.effects[i - 1].properties[prop.name] = {
+                  value: prop.value
+                };
+              });
+            }
+          };
+        })(this));
+      }
+    } else {
+      model.bodyClass = "no-comp";
     }
     return JSON.stringify(model);
   };
   getActivePageFile = function() {
     var activeComp;
     activeComp = NFProject.activeComp();
-    if (activeComp instanceof NFPageComp) {
+    if (activeComp instanceof NFPageComp && (activeComp.getPDFLayer().$.source != null)) {
       return activeComp.getPDFLayer().$.source.file.fsName;
     } else {
       return null;

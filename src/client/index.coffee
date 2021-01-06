@@ -53,6 +53,13 @@ $(document).ready ->
   rgbToRGBA255 = (arr) ->
     return [Math.round(arr[0]*255), Math.round(arr[1]*255), Math.round(arr[2]*255)]
 
+  displayError = (message) ->
+    $bar = $('#error-bar')
+    $bar.text "ERROR: #{message}"
+    $bar.show()
+
+  $('#error-bar').click ->
+    $(this).hide()
 
   getPageAnnotations = ->
     disp = $("#annotation-display")
@@ -63,7 +70,7 @@ $(document).ready ->
         hook "getActivePageFile()", (result) ->
           console.log "annotation hook returned - #{new Date() - annotationDate}ms"
           console.log result
-          if result isnt "null"
+          if result isnt "null" and result isnt "" and result isnt null
             url = 'http://localhost:3200/annotationData'
             $.ajax
               type: 'GET'
@@ -130,17 +137,23 @@ $(document).ready ->
         $('#smart-toggle').click()
         return console.log "turning off smart updates - request took too long"
 
-      data = JSON.parse res
-      if compLayerType isnt data.bodyClass
-        compLayerType = data.bodyClass
+      if res.length is 0
+        displayError "got nothing back from polling hook!"
         $("body").removeClass()
-        $("body").addClass(compLayerType)
-      $("body").data data
-      timerCounter++
-      if compLayerType.indexOf("page-comp") >= 0
-        getPageAnnotations()
-      if compLayerType.indexOf("emphasis-layer") >= 0
-        loadEmphasisPane()
+      else
+        data = JSON.parse res
+        if compLayerType isnt data.bodyClass
+          compLayerType = data.bodyClass
+          $("body").removeClass()
+          $("body").addClass(compLayerType)
+        $("body").data data
+        timerCounter++
+        if compLayerType.indexOf("page-comp") >= 0
+          getPageAnnotations()
+        if compLayerType.indexOf("emphasis-layer") >= 0
+          loadEmphasisPane()
+        if compLayerType.indexOf("part-comp") >= 0
+          loadLayoutPane()
 
   #
   # Bindings
@@ -338,7 +351,35 @@ $(document).ready ->
       pickerActive = no
       loadEmphasisPane()
 
+  loadLayoutPane = ->
+    $list = $("#selector-list")
 
+    if $list.children().length is 0
+      hook "getFullPDFTree()", (res) ->
+        selectorData = JSON.parse res
+        for pdfItem in selectorData.pdfs
+          $newPDFItem = $("<li>#{pdfItem.displayName}</li>").appendTo $list
+          $newPDFItem.data pdfItem
+          $pageList = $("<ul></ul>").appendTo $newPDFItem
+          for pageItem in pdfItem.pages
+            $newPageItem = $("<li>#{pageItem.displayName}</li>").appendTo $pageList
+            $newPageItem.data pageItem
+            if pageItem.shapes.length > 0
+              $shapeList = $("<ul></ul>").appendTo $newPageItem
+              for shapeItem in pageItem.shapes
+                $newShapeItem = $("<li>#{shapeItem.displayName}</li>").appendTo $shapeList
+                $newShapeItem.data shapeItem
 
+  $('#selector-list').on 'click', 'li', (event) ->
+    event.stopPropagation()
+    $('#selector-list li').removeClass('active')
+    $(this).addClass 'active'
+
+  $('#layout-panel .fullscreen-title').click (e) ->
+    $activeItem = $('#selector-list li.active')
+    if $activeItem?.data().type is "pageComp"
+      model =
+        target: $activeItem.data()
+      hook "runLayoutCommand(#{JSON.stringify model})"
 
   extensionDirectory = csInterface.getSystemPath('extension')
