@@ -119,6 +119,7 @@ try {
   };
   setBlendingMode = function(mode) {
     var modeCode;
+    app.beginUndoGroup("Set Blend Mode (via NF Panel)");
     if (mode === "overlay") {
       modeCode = BlendingMode.OVERLAY;
     } else if (mode === "multiply") {
@@ -128,16 +129,19 @@ try {
     } else {
       modeCode = BlendingMode.NORMAL;
     }
-    return NFProject.selectedLayers().forEach((function(_this) {
+    NFProject.selectedLayers().forEach((function(_this) {
       return function(layer) {
         return layer.$.blendingMode = modeCode;
       };
     })(this));
+    return app.endUndoGroup();
   };
   runLayoutCommand = function(model) {
     var activeComp;
+    app.beginUndoGroup("Run Layout Command");
     activeComp = NFProject.activeComp();
-    return activeComp.runLayoutCommand(model);
+    activeComp.runLayoutCommand(model);
+    return app.endUndoGroup();
   };
   getFullPDFTree = function() {
     var allPageComps, contentTree, j, k, key, len, len1, outputTree, pageComp, pageCompArr, pageLayers, pageNumber, pdfNumber, pdfObj, shapeLayers, thisPDF, thisPage;
@@ -209,7 +213,21 @@ try {
     return JSON.stringify(outputTree);
   };
   getPollingData = function() {
-    var activeComp, compType, layerType, model, selectedLayers, singleLayer;
+    var activeComp, compType, layerType, layerTypeString, model, selectedLayers;
+    layerTypeString = function(layer) {
+      var layerType;
+      if (layer instanceof NFPageLayer) {
+        return layerType = "page-layer";
+      } else if (layer instanceof NFHighlightLayer) {
+        return layerType = "highlight-layer";
+      } else if (layer instanceof NFHighlightControlLayer) {
+        return layerType = "highlight-control-layer";
+      } else if (layer instanceof NFEmphasisLayer) {
+        return layerType = "emphasis-layer";
+      } else {
+        return layerType = "misc-layer";
+      }
+    };
     model = {};
     activeComp = NFProject.activeComp();
     if (activeComp != null) {
@@ -224,18 +242,7 @@ try {
       if (selectedLayers.isEmpty()) {
         layerType = "no-layer";
       } else if (selectedLayers.count() === 1) {
-        singleLayer = selectedLayers.get(0);
-        if (singleLayer instanceof NFPageLayer) {
-          layerType = "page-layer";
-        } else if (singleLayer instanceof NFHighlightLayer) {
-          layerType = "highlight-layer";
-        } else if (singleLayer instanceof NFHighlightControlLayer) {
-          layerType = "highlight-control-layer";
-        } else if (singleLayer instanceof NFEmphasisLayer) {
-          layerType = "emphasis-layer";
-        } else {
-          layerType = "misc-layer";
-        }
+        layerType = layerTypeString(selectedLayers.get(0));
       } else {
         layerType = "multiple-layers";
       }
@@ -243,12 +250,15 @@ try {
       model.selectedLayers = [];
       selectedLayers.forEach((function(_this) {
         return function(layer) {
-          return model.selectedLayers.push(layer.getName());
+          return model.selectedLayers.push({
+            name: layer.getName(),
+            type: layerTypeString(layer)
+          });
         };
       })(this));
       if (selectedLayers.count() === 1) {
         model.effects = [];
-        singleLayer.aeq().forEachEffect((function(_this) {
+        selectedLayers.get(0).aeq().forEachEffect((function(_this) {
           return function(e, i) {
             if (e.matchName.indexOf("AV_") >= 0) {
               model.effects.push({

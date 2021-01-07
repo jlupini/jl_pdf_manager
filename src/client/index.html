@@ -27,12 +27,21 @@
 		<p id="tempDisplayText"></p>
 	</div>
 
-	<div id="annotation-display">
-		<p class='welcome-message'>When in a page comp, click 'Manually Fetch Annotations' to load the PDF annotations for that file. For automatic fetching, click the 'toggle smart updates' button.</p>
+	<div id="annotation-panel" class="transient-panel">
+		<div id="annotation-display">
+			<p class='welcome-message'>When in a page comp, click 'Manually Fetch Annotations' to load the PDF annotations for that file. For automatic fetching, click the 'toggle smart updates' button.</p>
+		</div>
 	</div>
 
 	<div id="layout-panel" class="transient-panel">
 		<div id="layout-title" class="panel-title">Animation Layout</div>
+		<div class="active-item">
+			<div class="item-name"></div>
+			<div class="item-info"></div>
+			<div class="item-control">
+				<button class="shrink-page">Shrink Page</button>
+			</div>
+		</div>
 		<div id="selector">
 			<ul id="selector-list"></ul>
 		</div>

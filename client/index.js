@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -11,6 +11,7 @@ $(document).ready(function() {
   hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')");
   latestAnnotationData = {};
   smartTimer = null;
+  POLLING_TIMEOUT = 350;
   timerCounter = 0;
   rgbToHex = function(r, g, b) {
     var componentToHex;
@@ -135,7 +136,7 @@ $(document).ready(function() {
       if (res == null) {
         return console.log("empty result!");
       }
-      if (requestTime > 250 && (smartTimer != null)) {
+      if (requestTime > POLLING_TIMEOUT && (smartTimer != null)) {
         timerCounter = 0;
         $('#smart-toggle').click();
         return console.log("turning off smart updates - request took too long");
@@ -370,7 +371,20 @@ $(document).ready(function() {
     }
   });
   loadLayoutPane = function() {
-    var $list;
+    var $itemName, $list, data, singleLayer;
+    data = $("body").data();
+    $itemName = $('#layout-panel .active-item .item-name');
+    if (data.selectedLayers.length === 0) {
+      $itemName.text("No layer selected");
+    } else if (data.selectedLayers.length === 1) {
+      singleLayer = data.selectedLayers[0];
+      $itemName.text(singleLayer.name);
+      if (singleLayer.type === "page-layer") {
+        $('#layout-panel .active-item button.shrink-page').show();
+      }
+    } else if (data.selectedLayers.length > 1) {
+      $itemName.text("Multiple layers selected");
+    }
     $list = $("#selector-list");
     if ($list.children().length === 0) {
       return hook("getFullPDFTree()", function(res) {
@@ -420,12 +434,21 @@ $(document).ready(function() {
     $('#selector-list li').removeClass('active');
     return $(this).addClass('active');
   });
+  $('#layout-panel .shrink-page').click(function(e) {
+    var model;
+    model = {
+      target: $('body').data().selectedLayers[0],
+      command: "shrink-page"
+    };
+    return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+  });
   $('#layout-panel .fullscreen-title').click(function(e) {
     var $activeItem, model;
     $activeItem = $('#selector-list li.active');
     if (($activeItem != null ? $activeItem.data().type : void 0) === "pageComp") {
       model = {
-        target: $activeItem.data()
+        target: $activeItem.data(),
+        command: "fullscreen-title"
       };
       return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }

@@ -31,6 +31,7 @@ $(document).ready ->
   #
   latestAnnotationData = {}
   smartTimer = null
+  POLLING_TIMEOUT = 350
 
   # Debug Vars
   timerCounter = 0
@@ -132,7 +133,7 @@ $(document).ready ->
       if not res?
         return console.log "empty result!"
 
-      if requestTime > 250 and smartTimer?
+      if requestTime > POLLING_TIMEOUT and smartTimer?
         timerCounter = 0
         $('#smart-toggle').click()
         return console.log "turning off smart updates - request took too long"
@@ -352,8 +353,22 @@ $(document).ready ->
       loadEmphasisPane()
 
   loadLayoutPane = ->
-    $list = $("#selector-list")
+    data = $("body").data()
 
+    $itemName = $('#layout-panel .active-item .item-name')
+    if data.selectedLayers.length is 0
+      $itemName.text "No layer selected"
+    else if data.selectedLayers.length is 1
+      singleLayer = data.selectedLayers[0]
+      $itemName.text singleLayer.name
+      if singleLayer.type is "page-layer"
+        $('#layout-panel .active-item button.shrink-page').show()
+    else if data.selectedLayers.length > 1
+      $itemName.text "Multiple layers selected"
+
+    # Load Selector
+    # FIXME: need a way to refresh this.
+    $list = $("#selector-list")
     if $list.children().length is 0
       hook "getFullPDFTree()", (res) ->
         selectorData = JSON.parse res
@@ -375,11 +390,18 @@ $(document).ready ->
     $('#selector-list li').removeClass('active')
     $(this).addClass 'active'
 
+  $('#layout-panel .shrink-page').click (e) ->
+    model =
+      target: $('body').data().selectedLayers[0]
+      command: "shrink-page"
+    hook "runLayoutCommand(#{JSON.stringify model})"
+
   $('#layout-panel .fullscreen-title').click (e) ->
     $activeItem = $('#selector-list li.active')
     if $activeItem?.data().type is "pageComp"
       model =
         target: $activeItem.data()
+        command: "fullscreen-title"
       hook "runLayoutCommand(#{JSON.stringify model})"
 
   extensionDirectory = csInterface.getSystemPath('extension')

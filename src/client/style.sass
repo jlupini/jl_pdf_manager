@@ -56,6 +56,8 @@ body
   &.page-comp
     #tab-page-comp
       color: red
+    #annotation-panel
+      display: block
     #annotation-display
       display: block
   &.part-comp
@@ -98,6 +100,13 @@ body
 
 #layout-panel
   display: none
+
+  .active-item
+    font-family: $regular-font
+
+    .item-control
+      button
+        display: none
 
   #selector
     max-height: 200px

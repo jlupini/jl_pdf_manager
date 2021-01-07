@@ -85,6 +85,7 @@ try
     alert "haven't done this yet"
 
   setBlendingMode = (mode) ->
+    app.beginUndoGroup "Set Blend Mode (via NF Panel)"
     if mode is "overlay"
       modeCode = BlendingMode.OVERLAY
     else if mode is "multiply"
@@ -96,10 +97,13 @@ try
 
     NFProject.selectedLayers().forEach (layer) =>
       layer.$.blendingMode = modeCode
+    app.endUndoGroup()
 
   runLayoutCommand = (model) ->
+    app.beginUndoGroup "Run Layout Command"
     activeComp = NFProject.activeComp()
     activeComp.runLayoutCommand model
+    app.endUndoGroup()
 
   getFullPDFTree = ->
     # Make an object with all the PDFs
@@ -164,6 +168,17 @@ try
 
 
   getPollingData = ->
+    layerTypeString = (layer) ->
+      if layer instanceof NFPageLayer
+        layerType = "page-layer"
+      else if layer instanceof NFHighlightLayer
+        layerType = "highlight-layer"
+      else if layer instanceof NFHighlightControlLayer
+        layerType = "highlight-control-layer"
+      else if layer instanceof NFEmphasisLayer
+        layerType = "emphasis-layer"
+      else layerType = "misc-layer"
+
     model = {}
     activeComp = NFProject.activeComp()
     if activeComp?
@@ -178,16 +193,8 @@ try
       if selectedLayers.isEmpty()
         layerType = "no-layer"
       else if selectedLayers.count() is 1
-        singleLayer = selectedLayers.get(0)
-        if singleLayer instanceof NFPageLayer
-          layerType = "page-layer"
-        else if singleLayer instanceof NFHighlightLayer
-          layerType = "highlight-layer"
-        else if singleLayer instanceof NFHighlightControlLayer
-          layerType = "highlight-control-layer"
-        else if singleLayer instanceof NFEmphasisLayer
-          layerType = "emphasis-layer"
-        else layerType = "misc-layer"
+        layerType = layerTypeString selectedLayers.get(0)
+
       else layerType = "multiple-layers"
 
       model.bodyClass = "#{layerType} #{compType}"
@@ -195,13 +202,15 @@ try
       # Selected Layer Names
       model.selectedLayers = []
       selectedLayers.forEach (layer) =>
-        model.selectedLayers.push layer.getName()
+        model.selectedLayers.push
+          name: layer.getName()
+          type: layerTypeString layer
 
       # Single Layer Effects
       if selectedLayers.count() is 1
         model.effects = []
         # Using aequery for the first time
-        singleLayer.aeq().forEachEffect (e, i) =>
+        selectedLayers.get(0).aeq().forEachEffect (e, i) =>
           if e.matchName.indexOf("AV_") >= 0
             # $.bp()
             model.effects.push
