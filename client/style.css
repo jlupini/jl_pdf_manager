@@ -65,14 +65,14 @@ body {
     font-size: 12px;
     padding: 0 0 0 10px;
     list-style-type: none; }
-    #layout-panel ul li.hover {
-      text-decoration: underline; }
-      #layout-panel ul li.hover li {
-        text-decoration: none; }
-    #layout-panel ul li.active {
-      font-weight: bold; }
-      #layout-panel ul li.active li {
-        font-weight: normal; }
+    #layout-panel ul li {
+      cursor: pointer; }
+      #layout-panel ul li > span:hover {
+        text-decoration: underline; }
+      #layout-panel ul li.active {
+        font-weight: bold; }
+        #layout-panel ul li.active li {
+          font-weight: normal; }
 
 #annotation-display {
   display: none; }

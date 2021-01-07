@@ -408,7 +408,7 @@ $(document).ready(function() {
         results = [];
         for (j = 0, len = ref.length; j < len; j++) {
           pdfItem = ref[j];
-          $newPDFItem = $("<li>" + pdfItem.name + "</li>").appendTo($list);
+          $newPDFItem = $("<li><span>" + pdfItem.name + "</span></li>").appendTo($list);
           $newPDFItem.data(pdfItem);
           $pageList = $("<ul></ul>").appendTo($newPDFItem);
           results.push((function() {
@@ -417,7 +417,7 @@ $(document).ready(function() {
             results1 = [];
             for (k = 0, len1 = ref1.length; k < len1; k++) {
               pageItem = ref1[k];
-              $newPageItem = $("<li>" + pageItem.name + "</li>").appendTo($pageList);
+              $newPageItem = $("<li><span>" + pageItem.name + "</span></li>").appendTo($pageList);
               $newPageItem.data(pageItem);
               if (pageItem.shapes.length > 0) {
                 $shapeList = $("<ul></ul>").appendTo($newPageItem);
@@ -427,7 +427,7 @@ $(document).ready(function() {
                   results2 = [];
                   for (l = 0, len2 = ref2.length; l < len2; l++) {
                     shapeItem = ref2[l];
-                    $newShapeItem = $("<li>" + shapeItem.name + "</li>").appendTo($shapeList);
+                    $newShapeItem = $("<li><span>" + shapeItem.name + "</span></li>").appendTo($shapeList);
                     results2.push($newShapeItem.data(shapeItem));
                   }
                   return results2;

@@ -387,17 +387,17 @@ $(document).ready ->
         selectorData = JSON.parse res
         console.log selectorData
         for pdfItem in selectorData.pdfs
-          $newPDFItem = $("<li>#{pdfItem.name}</li>").appendTo $list
+          $newPDFItem = $("<li><span>#{pdfItem.name}</span></li>").appendTo $list
           $newPDFItem.data pdfItem
           $pageList = $("<ul></ul>").appendTo $newPDFItem
           for pageItem in pdfItem.pages
-            $newPageItem = $("<li>#{pageItem.name}</li>").appendTo $pageList
+            $newPageItem = $("<li><span>#{pageItem.name}</span></li>").appendTo $pageList
             $newPageItem.data pageItem
             if pageItem.shapes.length > 0
               $shapeList = $("<ul></ul>").appendTo $newPageItem
               for shapeItem in pageItem.shapes
 
-                $newShapeItem = $("<li>#{shapeItem.name}</li>").appendTo $shapeList
+                $newShapeItem = $("<li><span>#{shapeItem.name}</span></li>").appendTo $shapeList
                 $newShapeItem.data shapeItem
 
   $('#selector-list').on 'click', 'li', (event) ->

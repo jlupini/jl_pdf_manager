@@ -117,17 +117,17 @@ body
     padding: 0 0 0 10px
     list-style-type: none
 
-    li.hover
-      text-decoration: underline
+    li
+      cursor: pointer
 
-      li
-        text-decoration: none
+      &>span:hover
+        text-decoration: underline
 
-    li.active
-      font-weight: bold
+      &.active
+        font-weight: bold
 
-      li
-        font-weight: normal
+        li
+          font-weight: normal
 
 #annotation-display
   display: none
