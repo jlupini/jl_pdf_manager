@@ -107,93 +107,57 @@ try
 
   getFullPDFTree = ->
     # Make an object with all the PDFs
-    contentTree = {}
-    outputTree =
-      pdfs: []
-    allPageComps = NFProject.allPageComps()
+    try
+      contentTree = {}
+      outputTree =
+        pdfs: []
+      allPageComps = NFProject.allPageComps()
 
-    for pageComp in allPageComps
-      pdfNumber = pageComp.getPDFNumber()
+      for pageComp in allPageComps
+        pdfNumber = pageComp.getPDFNumber()
 
-      contentTree[pdfNumber] = [] unless contentTree[pdfNumber]?
-      contentTree[pdfNumber].push pageComp
+        contentTree[pdfNumber] = [] unless contentTree[pdfNumber]?
+        contentTree[pdfNumber].push pageComp
 
-    for key of contentTree
-      pdfObj = NFPDF.fromPDFNumber key
-      pageCompArr = contentTree[key]
+      for key of contentTree
+        thisPDF = NFPDF.fromPDFNumber(key).simplify()
+        thisPDF.pages = []
 
-      thisPDF =
-        id: key
-        type: "pdf"
-        displayName: "PDF #{key}"
-        pages: []
+        pageCompArr = contentTree[key]
+        for pageComp in pageCompArr
+          thisPage = pageComp.simplify()
+          thisPage.shapes = []
 
-      for pageComp in pageCompArr
-        pageNumber = pageComp.getPageNumber()
+          # Collect only the shape layers
+          pageLayers = pageComp.allLayers()
+          shapeLayers = new NFLayerCollection
+          pageLayers.forEach (layer) =>
+            shapeLayers.add layer if layer.$ instanceof ShapeLayer
 
-        thisPage =
-          id: pageComp.getID()
-          type: "pageComp"
-          pageNumber: pageNumber
-          displayName: "Page #{pageNumber}"
-          compName: pageComp.getName()
-          shapes: []
+          unless shapeLayers.isEmpty()
+            shapeLayers.forEach (shapeLayer) =>
+              thisPage.shapes.push shapeLayer.simplify()
 
-        # Collect only the shape layers
-        pageLayers = pageComp.allLayers()
-        shapeLayers = new NFLayerCollection
-        pageLayers.forEach (layer) =>
-          shapeLayers.add layer if layer.$ instanceof ShapeLayer
+          thisPDF.pages.push thisPage
 
-        unless shapeLayers.isEmpty()
-          shapeLayers.forEach (shapeLayer) =>
-            thisShape =
-              type: "shape"
-              layerName: shapeLayer.$.name
+        outputTree.pdfs.push thisPDF
 
-            if shapeLayer instanceof NFHighlightLayer
-              thisShape.displayName = shapeLayer.$.name + " (HL)"
-              thisShape.highlight = true
-            else
-              thisShape.displayName = shapeLayer.$.name + " (Shape)"
-              thisShape.highlight = false
-
-            thisPage.shapes.push thisShape
-
-        thisPDF.pages.push thisPage
-
-      outputTree.pdfs.push thisPDF
-
-    return JSON.stringify outputTree
+      return JSON.stringify outputTree
+    catch e
+      return e
 
 
   getPollingData = ->
-    layerTypeString = (layer) ->
-      if layer instanceof NFPageLayer
-        layerType = "page-layer"
-      else if layer instanceof NFHighlightLayer
-        layerType = "highlight-layer"
-      else if layer instanceof NFHighlightControlLayer
-        layerType = "highlight-control-layer"
-      else if layer instanceof NFEmphasisLayer
-        layerType = "emphasis-layer"
-      else layerType = "misc-layer"
-
     model = {}
     activeComp = NFProject.activeComp()
     if activeComp?
-      # Body Classes
-      if activeComp instanceof NFPageComp
-        compType = "page-comp"
-      else if activeComp instanceof NFPartComp
-        compType = "part-comp"
-      else compType = "misc-comp"
+      compType = activeComp.simplify().class
 
       selectedLayers = NFProject.selectedLayers()
       if selectedLayers.isEmpty()
         layerType = "no-layer"
       else if selectedLayers.count() is 1
-        layerType = layerTypeString selectedLayers.get(0)
+        layerType = selectedLayers.get(0).simplify().class
 
       else layerType = "multiple-layers"
 
@@ -202,9 +166,7 @@ try
       # Selected Layer Names
       model.selectedLayers = []
       selectedLayers.forEach (layer) =>
-        model.selectedLayers.push
-          name: layer.getName()
-          type: layerTypeString layer
+        model.selectedLayers.push layer.simplify()
 
       # Single Layer Effects
       if selectedLayers.count() is 1

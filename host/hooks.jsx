@@ -144,105 +144,66 @@ try {
     return app.endUndoGroup();
   };
   getFullPDFTree = function() {
-    var allPageComps, contentTree, j, k, key, len, len1, outputTree, pageComp, pageCompArr, pageLayers, pageNumber, pdfNumber, pdfObj, shapeLayers, thisPDF, thisPage;
-    contentTree = {};
-    outputTree = {
-      pdfs: []
-    };
-    allPageComps = NFProject.allPageComps();
-    for (j = 0, len = allPageComps.length; j < len; j++) {
-      pageComp = allPageComps[j];
-      pdfNumber = pageComp.getPDFNumber();
-      if (contentTree[pdfNumber] == null) {
-        contentTree[pdfNumber] = [];
-      }
-      contentTree[pdfNumber].push(pageComp);
-    }
-    for (key in contentTree) {
-      pdfObj = NFPDF.fromPDFNumber(key);
-      pageCompArr = contentTree[key];
-      thisPDF = {
-        id: key,
-        type: "pdf",
-        displayName: "PDF " + key,
-        pages: []
+    var allPageComps, contentTree, e, error, j, k, key, len, len1, outputTree, pageComp, pageCompArr, pageLayers, pdfNumber, shapeLayers, thisPDF, thisPage;
+    try {
+      contentTree = {};
+      outputTree = {
+        pdfs: []
       };
-      for (k = 0, len1 = pageCompArr.length; k < len1; k++) {
-        pageComp = pageCompArr[k];
-        pageNumber = pageComp.getPageNumber();
-        thisPage = {
-          id: pageComp.getID(),
-          type: "pageComp",
-          pageNumber: pageNumber,
-          displayName: "Page " + pageNumber,
-          compName: pageComp.getName(),
-          shapes: []
-        };
-        pageLayers = pageComp.allLayers();
-        shapeLayers = new NFLayerCollection;
-        pageLayers.forEach((function(_this) {
-          return function(layer) {
-            if (layer.$ instanceof ShapeLayer) {
-              return shapeLayers.add(layer);
-            }
-          };
-        })(this));
-        if (!shapeLayers.isEmpty()) {
-          shapeLayers.forEach((function(_this) {
-            return function(shapeLayer) {
-              var thisShape;
-              thisShape = {
-                type: "shape",
-                layerName: shapeLayer.$.name
-              };
-              if (shapeLayer instanceof NFHighlightLayer) {
-                thisShape.displayName = shapeLayer.$.name + " (HL)";
-                thisShape.highlight = true;
-              } else {
-                thisShape.displayName = shapeLayer.$.name + " (Shape)";
-                thisShape.highlight = false;
+      allPageComps = NFProject.allPageComps();
+      for (j = 0, len = allPageComps.length; j < len; j++) {
+        pageComp = allPageComps[j];
+        pdfNumber = pageComp.getPDFNumber();
+        if (contentTree[pdfNumber] == null) {
+          contentTree[pdfNumber] = [];
+        }
+        contentTree[pdfNumber].push(pageComp);
+      }
+      for (key in contentTree) {
+        thisPDF = NFPDF.fromPDFNumber(key).simplify();
+        thisPDF.pages = [];
+        pageCompArr = contentTree[key];
+        for (k = 0, len1 = pageCompArr.length; k < len1; k++) {
+          pageComp = pageCompArr[k];
+          thisPage = pageComp.simplify();
+          thisPage.shapes = [];
+          pageLayers = pageComp.allLayers();
+          shapeLayers = new NFLayerCollection;
+          pageLayers.forEach((function(_this) {
+            return function(layer) {
+              if (layer.$ instanceof ShapeLayer) {
+                return shapeLayers.add(layer);
               }
-              return thisPage.shapes.push(thisShape);
             };
           })(this));
+          if (!shapeLayers.isEmpty()) {
+            shapeLayers.forEach((function(_this) {
+              return function(shapeLayer) {
+                return thisPage.shapes.push(shapeLayer.simplify());
+              };
+            })(this));
+          }
+          thisPDF.pages.push(thisPage);
         }
-        thisPDF.pages.push(thisPage);
+        outputTree.pdfs.push(thisPDF);
       }
-      outputTree.pdfs.push(thisPDF);
+      return JSON.stringify(outputTree);
+    } catch (error) {
+      e = error;
+      return e;
     }
-    return JSON.stringify(outputTree);
   };
   getPollingData = function() {
-    var activeComp, compType, layerType, layerTypeString, model, selectedLayers;
-    layerTypeString = function(layer) {
-      var layerType;
-      if (layer instanceof NFPageLayer) {
-        return layerType = "page-layer";
-      } else if (layer instanceof NFHighlightLayer) {
-        return layerType = "highlight-layer";
-      } else if (layer instanceof NFHighlightControlLayer) {
-        return layerType = "highlight-control-layer";
-      } else if (layer instanceof NFEmphasisLayer) {
-        return layerType = "emphasis-layer";
-      } else {
-        return layerType = "misc-layer";
-      }
-    };
+    var activeComp, compType, layerType, model, selectedLayers;
     model = {};
     activeComp = NFProject.activeComp();
     if (activeComp != null) {
-      if (activeComp instanceof NFPageComp) {
-        compType = "page-comp";
-      } else if (activeComp instanceof NFPartComp) {
-        compType = "part-comp";
-      } else {
-        compType = "misc-comp";
-      }
+      compType = activeComp.simplify()["class"];
       selectedLayers = NFProject.selectedLayers();
       if (selectedLayers.isEmpty()) {
         layerType = "no-layer";
       } else if (selectedLayers.count() === 1) {
-        layerType = layerTypeString(selectedLayers.get(0));
+        layerType = selectedLayers.get(0).simplify()["class"];
       } else {
         layerType = "multiple-layers";
       }
@@ -250,10 +211,7 @@ try {
       model.selectedLayers = [];
       selectedLayers.forEach((function(_this) {
         return function(layer) {
-          return model.selectedLayers.push({
-            name: layer.getName(),
-            type: layerTypeString(layer)
-          });
+          return model.selectedLayers.push(layer.simplify());
         };
       })(this));
       if (selectedLayers.count() === 1) {

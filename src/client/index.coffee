@@ -32,6 +32,18 @@ $(document).ready ->
   latestAnnotationData = {}
   smartTimer = null
   POLLING_TIMEOUT = 350
+  NFClass =
+    Comp: "NFComp"
+    PartComp: "NFPartComp"
+    PageComp: "NFPageComp"
+    Layer: "NFLayer"
+    PageLayer: "NFPageLayer"
+    CitationLayer: "NFCitationLayer"
+    GaussyLayer: "NFGaussyLayer"
+    EmphasisLayer: "NFEmphasisLayer"
+    HighlightLayer: "NFHighlightLayer"
+    HighlightControlLayer: "NFHighlightControlLayer"
+    ShapeLayer: "NFShapeLayer"
 
   # Debug Vars
   timerCounter = 0
@@ -142,6 +154,7 @@ $(document).ready ->
         displayError "got nothing back from polling hook!"
         $("body").removeClass()
       else
+        # console.log res
         data = JSON.parse res
         if compLayerType isnt data.bodyClass
           compLayerType = data.bodyClass
@@ -149,11 +162,11 @@ $(document).ready ->
           $("body").addClass(compLayerType)
         $("body").data data
         timerCounter++
-        if compLayerType.indexOf("page-comp") >= 0
+        if compLayerType.indexOf(NFClass.PageComp) >= 0
           getPageAnnotations()
-        if compLayerType.indexOf("emphasis-layer") >= 0
+        if compLayerType.indexOf(NFClass.EmphasisLayer) >= 0
           loadEmphasisPane()
-        if compLayerType.indexOf("part-comp") >= 0
+        if compLayerType.indexOf(NFClass.PartComp) >= 0
           loadLayoutPane()
 
   #
@@ -234,8 +247,8 @@ $(document).ready ->
   #       result.push key.slice(2)
   #   result.join ' '
   #
+  # el = $newShapeItem
   # el.bind getAllEvents(el[0]), (e) ->
-  #
   #   console.log e
 
   isChangingValue = no
@@ -361,7 +374,7 @@ $(document).ready ->
     else if data.selectedLayers.length is 1
       singleLayer = data.selectedLayers[0]
       $itemName.text singleLayer.name
-      if singleLayer.type is "page-layer"
+      if singleLayer.class is NFClass.PageLayer
         $('#layout-panel .active-item button.shrink-page').show()
     else if data.selectedLayers.length > 1
       $itemName.text "Multiple layers selected"
@@ -372,23 +385,30 @@ $(document).ready ->
     if $list.children().length is 0
       hook "getFullPDFTree()", (res) ->
         selectorData = JSON.parse res
+        console.log selectorData
         for pdfItem in selectorData.pdfs
-          $newPDFItem = $("<li>#{pdfItem.displayName}</li>").appendTo $list
+          $newPDFItem = $("<li>#{pdfItem.name}</li>").appendTo $list
           $newPDFItem.data pdfItem
           $pageList = $("<ul></ul>").appendTo $newPDFItem
           for pageItem in pdfItem.pages
-            $newPageItem = $("<li>#{pageItem.displayName}</li>").appendTo $pageList
+            $newPageItem = $("<li>#{pageItem.name}</li>").appendTo $pageList
             $newPageItem.data pageItem
             if pageItem.shapes.length > 0
               $shapeList = $("<ul></ul>").appendTo $newPageItem
               for shapeItem in pageItem.shapes
-                $newShapeItem = $("<li>#{shapeItem.displayName}</li>").appendTo $shapeList
+
+                $newShapeItem = $("<li>#{shapeItem.name}</li>").appendTo $shapeList
                 $newShapeItem.data shapeItem
 
   $('#selector-list').on 'click', 'li', (event) ->
     event.stopPropagation()
     $('#selector-list li').removeClass('active')
     $(this).addClass 'active'
+
+  # $('#selector-list').on 'mouseover', 'li', (event) ->
+  #   event.stopPropagation()
+  #   $('#selector-list li').removeClass('hover')
+  #   $(this).addClass 'hover'
 
   $('#layout-panel .shrink-page').click (e) ->
     model =
@@ -398,7 +418,7 @@ $(document).ready ->
 
   $('#layout-panel .fullscreen-title').click (e) ->
     $activeItem = $('#selector-list li.active')
-    if $activeItem?.data().type is "pageComp"
+    if $activeItem?.data().class is NFClass.PageComp
       model =
         target: $activeItem.data()
         command: "fullscreen-title"

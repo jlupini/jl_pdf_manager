@@ -44,34 +44,34 @@ body
   &.no-layer
     #tab-no-layer
       color: red
-  &.misc-layer
+  &.NFLayer
     #tab-misc-layer
       color: red
-  &.emphasis-layer
+  &.NFEmphasisLayer
     #emphasizer-panel
       display: block
-  &.page-layer
+  &.NFPageLayer
     #tab-page-layer
       color: red
-  &.page-comp
+  &.NFPageComp
     #tab-page-comp
       color: red
     #annotation-panel
       display: block
     #annotation-display
       display: block
-  &.part-comp
+  &.NFPartComp
     #layout-panel
       display: block
     #tab-part-comp
       color: red
-  &.highlight-layer
+  &.NFHighlightLayer
     #tab-highlight-layer
       color: red
-  &.highlight-control-layer
+  &.NFHighlightControlLayer
     #tab-highlight-control-layer
       color: red
-  &.misc-comp
+  &.NFComp
     #tab-misc-comp
       color: red
 
@@ -116,6 +116,12 @@ body
     font-size: 12px
     padding: 0 0 0 10px
     list-style-type: none
+
+    li.hover
+      text-decoration: underline
+
+      li
+        text-decoration: none
 
     li.active
       font-weight: bold

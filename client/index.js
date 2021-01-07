@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var NFClass, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -12,6 +12,19 @@ $(document).ready(function() {
   latestAnnotationData = {};
   smartTimer = null;
   POLLING_TIMEOUT = 350;
+  NFClass = {
+    Comp: "NFComp",
+    PartComp: "NFPartComp",
+    PageComp: "NFPageComp",
+    Layer: "NFLayer",
+    PageLayer: "NFPageLayer",
+    CitationLayer: "NFCitationLayer",
+    GaussyLayer: "NFGaussyLayer",
+    EmphasisLayer: "NFEmphasisLayer",
+    HighlightLayer: "NFHighlightLayer",
+    HighlightControlLayer: "NFHighlightControlLayer",
+    ShapeLayer: "NFShapeLayer"
+  };
   timerCounter = 0;
   rgbToHex = function(r, g, b) {
     var componentToHex;
@@ -153,13 +166,13 @@ $(document).ready(function() {
         }
         $("body").data(data);
         timerCounter++;
-        if (compLayerType.indexOf("page-comp") >= 0) {
+        if (compLayerType.indexOf(NFClass.PageComp) >= 0) {
           getPageAnnotations();
         }
-        if (compLayerType.indexOf("emphasis-layer") >= 0) {
+        if (compLayerType.indexOf(NFClass.EmphasisLayer) >= 0) {
           loadEmphasisPane();
         }
-        if (compLayerType.indexOf("part-comp") >= 0) {
+        if (compLayerType.indexOf(NFClass.PartComp) >= 0) {
           return loadLayoutPane();
         }
       }
@@ -379,7 +392,7 @@ $(document).ready(function() {
     } else if (data.selectedLayers.length === 1) {
       singleLayer = data.selectedLayers[0];
       $itemName.text(singleLayer.name);
-      if (singleLayer.type === "page-layer") {
+      if (singleLayer["class"] === NFClass.PageLayer) {
         $('#layout-panel .active-item button.shrink-page').show();
       }
     } else if (data.selectedLayers.length > 1) {
@@ -390,11 +403,12 @@ $(document).ready(function() {
       return hook("getFullPDFTree()", function(res) {
         var $newPDFItem, $newPageItem, $newShapeItem, $pageList, $shapeList, j, len, pageItem, pdfItem, ref, results, selectorData, shapeItem;
         selectorData = JSON.parse(res);
+        console.log(selectorData);
         ref = selectorData.pdfs;
         results = [];
         for (j = 0, len = ref.length; j < len; j++) {
           pdfItem = ref[j];
-          $newPDFItem = $("<li>" + pdfItem.displayName + "</li>").appendTo($list);
+          $newPDFItem = $("<li>" + pdfItem.name + "</li>").appendTo($list);
           $newPDFItem.data(pdfItem);
           $pageList = $("<ul></ul>").appendTo($newPDFItem);
           results.push((function() {
@@ -403,7 +417,7 @@ $(document).ready(function() {
             results1 = [];
             for (k = 0, len1 = ref1.length; k < len1; k++) {
               pageItem = ref1[k];
-              $newPageItem = $("<li>" + pageItem.displayName + "</li>").appendTo($pageList);
+              $newPageItem = $("<li>" + pageItem.name + "</li>").appendTo($pageList);
               $newPageItem.data(pageItem);
               if (pageItem.shapes.length > 0) {
                 $shapeList = $("<ul></ul>").appendTo($newPageItem);
@@ -413,7 +427,7 @@ $(document).ready(function() {
                   results2 = [];
                   for (l = 0, len2 = ref2.length; l < len2; l++) {
                     shapeItem = ref2[l];
-                    $newShapeItem = $("<li>" + shapeItem.displayName + "</li>").appendTo($shapeList);
+                    $newShapeItem = $("<li>" + shapeItem.name + "</li>").appendTo($shapeList);
                     results2.push($newShapeItem.data(shapeItem));
                   }
                   return results2;
@@ -445,7 +459,7 @@ $(document).ready(function() {
   $('#layout-panel .fullscreen-title').click(function(e) {
     var $activeItem, model;
     $activeItem = $('#selector-list li.active');
-    if (($activeItem != null ? $activeItem.data().type : void 0) === "pageComp") {
+    if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
       model = {
         target: $activeItem.data(),
         command: "fullscreen-title"

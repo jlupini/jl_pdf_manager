@@ -7,27 +7,27 @@ body {
   color: white; }
   body.no-layer #tab-no-layer {
     color: red; }
-  body.misc-layer #tab-misc-layer {
+  body.NFLayer #tab-misc-layer {
     color: red; }
-  body.emphasis-layer #emphasizer-panel {
+  body.NFEmphasisLayer #emphasizer-panel {
     display: block; }
-  body.page-layer #tab-page-layer {
+  body.NFPageLayer #tab-page-layer {
     color: red; }
-  body.page-comp #tab-page-comp {
+  body.NFPageComp #tab-page-comp {
     color: red; }
-  body.page-comp #annotation-panel {
+  body.NFPageComp #annotation-panel {
     display: block; }
-  body.page-comp #annotation-display {
+  body.NFPageComp #annotation-display {
     display: block; }
-  body.part-comp #layout-panel {
+  body.NFPartComp #layout-panel {
     display: block; }
-  body.part-comp #tab-part-comp {
+  body.NFPartComp #tab-part-comp {
     color: red; }
-  body.highlight-layer #tab-highlight-layer {
+  body.NFHighlightLayer #tab-highlight-layer {
     color: red; }
-  body.highlight-control-layer #tab-highlight-control-layer {
+  body.NFHighlightControlLayer #tab-highlight-control-layer {
     color: red; }
-  body.misc-comp #tab-misc-comp {
+  body.NFComp #tab-misc-comp {
     color: red; }
 
 #error-bar {
@@ -65,6 +65,10 @@ body {
     font-size: 12px;
     padding: 0 0 0 10px;
     list-style-type: none; }
+    #layout-panel ul li.hover {
+      text-decoration: underline; }
+      #layout-panel ul li.hover li {
+        text-decoration: none; }
     #layout-panel ul li.active {
       font-weight: bold; }
       #layout-panel ul li.active li {
