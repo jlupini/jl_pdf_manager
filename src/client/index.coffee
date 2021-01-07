@@ -374,12 +374,13 @@ $(document).ready ->
     else if data.selectedLayers.length is 1
       singleLayer = data.selectedLayers[0]
       $itemName.text singleLayer.name
-      if singleLayer.class is NFClass.PageLayer
-        $('#layout-panel .active-item button.shrink-page').removeClass 'disabled'
-      else
-        $('#layout-panel .active-item button.shrink-page').addClass 'disabled'
     else if data.selectedLayers.length > 1
       $itemName.text "Multiple layers selected"
+
+    if singleLayer?.class is NFClass.PageLayer
+      $('#layout-panel .active-item button.shrink-page').removeClass 'disabled'
+    else
+      $('#layout-panel .active-item button.shrink-page').addClass 'disabled'
 
     # Load Selector
     # FIXME: need a way to refresh this.

@@ -392,13 +392,13 @@ $(document).ready(function() {
     } else if (data.selectedLayers.length === 1) {
       singleLayer = data.selectedLayers[0];
       $itemName.text(singleLayer.name);
-      if (singleLayer["class"] === NFClass.PageLayer) {
-        $('#layout-panel .active-item button.shrink-page').removeClass('disabled');
-      } else {
-        $('#layout-panel .active-item button.shrink-page').addClass('disabled');
-      }
     } else if (data.selectedLayers.length > 1) {
       $itemName.text("Multiple layers selected");
+    }
+    if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.PageLayer) {
+      $('#layout-panel .active-item button.shrink-page').removeClass('disabled');
+    } else {
+      $('#layout-panel .active-item button.shrink-page').addClass('disabled');
     }
     $list = $("#selector-list");
     if ($list.children().length === 0) {
