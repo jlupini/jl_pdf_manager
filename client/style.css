@@ -56,8 +56,6 @@ body {
   display: none; }
   #layout-panel .active-item {
     font-family: "HelveticaNeue-Regular", "Helvetica Neue Regular", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; }
-    #layout-panel .active-item .item-control button {
-      display: none; }
   #layout-panel #selector {
     max-height: 200px;
     overflow: scroll; }

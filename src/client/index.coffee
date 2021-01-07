@@ -375,7 +375,9 @@ $(document).ready ->
       singleLayer = data.selectedLayers[0]
       $itemName.text singleLayer.name
       if singleLayer.class is NFClass.PageLayer
-        $('#layout-panel .active-item button.shrink-page').show()
+        $('#layout-panel .active-item button.shrink-page').removeClass 'disabled'
+      else
+        $('#layout-panel .active-item button.shrink-page').addClass 'disabled'
     else if data.selectedLayers.length > 1
       $itemName.text "Multiple layers selected"
 
@@ -403,25 +405,26 @@ $(document).ready ->
   $('#selector-list').on 'click', 'li', (event) ->
     event.stopPropagation()
     $('#selector-list li').removeClass('active')
+    if $(this).data().class is NFClass.PageComp
+      $('#layout-panel .fullscreen-title').removeClass('disabled')
+    else
+      $('#layout-panel .fullscreen-title').addClass('disabled')
     $(this).addClass 'active'
 
-  # $('#selector-list').on 'mouseover', 'li', (event) ->
-  #   event.stopPropagation()
-  #   $('#selector-list li').removeClass('hover')
-  #   $(this).addClass 'hover'
-
   $('#layout-panel .shrink-page').click (e) ->
-    model =
-      target: $('body').data().selectedLayers[0]
-      command: "shrink-page"
-    hook "runLayoutCommand(#{JSON.stringify model})"
+    unless $(this).hasClass 'disabled'
+      model =
+        target: $('body').data().selectedLayers[0]
+        command: "shrink-page"
+      hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .fullscreen-title').click (e) ->
-    $activeItem = $('#selector-list li.active')
-    if $activeItem?.data().class is NFClass.PageComp
-      model =
-        target: $activeItem.data()
-        command: "fullscreen-title"
-      hook "runLayoutCommand(#{JSON.stringify model})"
+    unless $(this).hasClass 'disabled'
+      $activeItem = $('#selector-list li.active')
+      if $activeItem?.data().class is NFClass.PageComp
+        model =
+          target: $activeItem.data()
+          command: "fullscreen-title"
+        hook "runLayoutCommand(#{JSON.stringify model})"
 
   extensionDirectory = csInterface.getSystemPath('extension')

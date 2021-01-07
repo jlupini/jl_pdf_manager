@@ -393,7 +393,9 @@ $(document).ready(function() {
       singleLayer = data.selectedLayers[0];
       $itemName.text(singleLayer.name);
       if (singleLayer["class"] === NFClass.PageLayer) {
-        $('#layout-panel .active-item button.shrink-page').show();
+        $('#layout-panel .active-item button.shrink-page').removeClass('disabled');
+      } else {
+        $('#layout-panel .active-item button.shrink-page').addClass('disabled');
       }
     } else if (data.selectedLayers.length > 1) {
       $itemName.text("Multiple layers selected");
@@ -446,25 +448,34 @@ $(document).ready(function() {
   $('#selector-list').on('click', 'li', function(event) {
     event.stopPropagation();
     $('#selector-list li').removeClass('active');
+    if ($(this).data()["class"] === NFClass.PageComp) {
+      $('#layout-panel .fullscreen-title').removeClass('disabled');
+    } else {
+      $('#layout-panel .fullscreen-title').addClass('disabled');
+    }
     return $(this).addClass('active');
   });
   $('#layout-panel .shrink-page').click(function(e) {
     var model;
-    model = {
-      target: $('body').data().selectedLayers[0],
-      command: "shrink-page"
-    };
-    return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+    if (!$(this).hasClass('disabled')) {
+      model = {
+        target: $('body').data().selectedLayers[0],
+        command: "shrink-page"
+      };
+      return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+    }
   });
   $('#layout-panel .fullscreen-title').click(function(e) {
     var $activeItem, model;
-    $activeItem = $('#selector-list li.active');
-    if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
-      model = {
-        target: $activeItem.data(),
-        command: "fullscreen-title"
-      };
-      return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+    if (!$(this).hasClass('disabled')) {
+      $activeItem = $('#selector-list li.active');
+      if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
+        model = {
+          target: $activeItem.data(),
+          command: "fullscreen-title"
+        };
+        return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+      }
     }
   });
   return extensionDirectory = csInterface.getSystemPath('extension');
