@@ -44,6 +44,7 @@ $(document).ready ->
     HighlightLayer: "NFHighlightLayer"
     HighlightControlLayer: "NFHighlightControlLayer"
     ShapeLayer: "NFShapeLayer"
+    ReferencePageLayer: "NFReferencePageLayer"
 
   # Debug Vars
   timerCounter = 0
@@ -377,10 +378,12 @@ $(document).ready ->
     else if data.selectedLayers.length > 1
       $itemName.text "Multiple layers selected"
 
+    $('#layout-panel .active-item .item-control button').addClass 'disabled'
+
     if singleLayer?.class is NFClass.PageLayer
       $('#layout-panel .active-item button.shrink-page').removeClass 'disabled'
-    else
-      $('#layout-panel .active-item button.shrink-page').addClass 'disabled'
+    if singleLayer?.class is NFClass.ReferencePageLayer
+      $('#layout-panel .active-item button.re-anchor').removeClass 'disabled'
 
     # Load Selector
     # FIXME: need a way to refresh this.
@@ -425,6 +428,13 @@ $(document).ready ->
       model =
         target: $('body').data().selectedLayers[0]
         command: "shrink-page"
+      hook "runLayoutCommand(#{JSON.stringify model})"
+
+  $('#layout-panel .re-anchor').click (e) ->
+    unless $(this).hasClass 'disabled'
+      model =
+        target: $('body').data().selectedLayers[0]
+        command: "anchor"
       hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .fullscreen-title').click (e) ->
