@@ -406,10 +406,18 @@ $(document).ready ->
   $('#selector-list').on 'click', 'li', (event) ->
     event.stopPropagation()
     $('#selector-list li').removeClass('active')
-    if $(this).data().class is NFClass.PageComp
+
+    targetClass = $(this).data().class
+    if targetClass is NFClass.PageComp
       $('#layout-panel .fullscreen-title').removeClass('disabled')
     else
       $('#layout-panel .fullscreen-title').addClass('disabled')
+
+    if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer
+      $('#layout-panel .expose').removeClass('disabled')
+    else
+      $('#layout-panel .expose').addClass('disabled')
+
     $(this).addClass 'active'
 
   $('#layout-panel .shrink-page').click (e) ->
@@ -426,6 +434,16 @@ $(document).ready ->
         model =
           target: $activeItem.data()
           command: "fullscreen-title"
+        hook "runLayoutCommand(#{JSON.stringify model})"
+
+  $('#layout-panel .expose').click (e) ->
+    unless $(this).hasClass 'disabled'
+      $activeItem = $('#selector-list li.active')
+      data = $activeItem?.data()
+      if data.class is NFClass.ShapeLayer or data.class is NFClass.HighlightLayer
+        model =
+          target: data
+          command: "expose"
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   extensionDirectory = csInterface.getSystemPath('extension')

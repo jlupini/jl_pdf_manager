@@ -446,12 +446,19 @@ $(document).ready(function() {
     }
   };
   $('#selector-list').on('click', 'li', function(event) {
+    var targetClass;
     event.stopPropagation();
     $('#selector-list li').removeClass('active');
-    if ($(this).data()["class"] === NFClass.PageComp) {
+    targetClass = $(this).data()["class"];
+    if (targetClass === NFClass.PageComp) {
       $('#layout-panel .fullscreen-title').removeClass('disabled');
     } else {
       $('#layout-panel .fullscreen-title').addClass('disabled');
+    }
+    if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
+      $('#layout-panel .expose').removeClass('disabled');
+    } else {
+      $('#layout-panel .expose').addClass('disabled');
     }
     return $(this).addClass('active');
   });
@@ -473,6 +480,20 @@ $(document).ready(function() {
         model = {
           target: $activeItem.data(),
           command: "fullscreen-title"
+        };
+        return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+      }
+    }
+  });
+  $('#layout-panel .expose').click(function(e) {
+    var $activeItem, data, model;
+    if (!$(this).hasClass('disabled')) {
+      $activeItem = $('#selector-list li.active');
+      data = $activeItem != null ? $activeItem.data() : void 0;
+      if (data["class"] === NFClass.ShapeLayer || data["class"] === NFClass.HighlightLayer) {
+        model = {
+          target: data,
+          command: "expose"
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
