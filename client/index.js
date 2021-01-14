@@ -465,10 +465,11 @@ $(document).ready(function() {
     }
   };
   $('#selector-list').on('click', 'li', function(event) {
-    var targetClass;
+    var targetClass, targetData;
     event.stopPropagation();
     $('#selector-list li').removeClass('active');
-    targetClass = $(this).data()["class"];
+    targetData = $(this).data();
+    targetClass = targetData["class"];
     if (targetClass === NFClass.PageComp) {
       $('#layout-panel .fullscreen-title').removeClass('disabled');
       $('#layout-panel .switch-to-page').removeClass('disabled');
@@ -478,8 +479,14 @@ $(document).ready(function() {
     }
     if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
       $('#layout-panel .expose').removeClass('disabled');
+      if (targetData.name.toLowerCase().indexOf('expand') >= 0) {
+        $('#layout-panel .expand').removeClass('disabled');
+      } else {
+        $('#layout-panel .expand').addClass('disabled');
+      }
     } else {
       $('#layout-panel .expose').addClass('disabled');
+      $('#layout-panel .expand').addClass('disabled');
     }
     return $(this).addClass('active');
   });
@@ -540,6 +547,20 @@ $(document).ready(function() {
         model = {
           target: data,
           command: "expose"
+        };
+        return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+      }
+    }
+  });
+  $('#layout-panel .expand').click(function(e) {
+    var $activeItem, data, model;
+    if (!$(this).hasClass('disabled')) {
+      $activeItem = $('#selector-list li.active');
+      data = $activeItem != null ? $activeItem.data() : void 0;
+      if (data["class"] === NFClass.ShapeLayer || data["class"] === NFClass.HighlightLayer) {
+        model = {
+          target: data,
+          command: "expand"
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
