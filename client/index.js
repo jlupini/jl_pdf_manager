@@ -399,9 +399,11 @@ $(document).ready(function() {
     $('#layout-panel .active-item .item-control button').addClass('disabled');
     if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.PageLayer) {
       $('#layout-panel .active-item button.shrink-page').removeClass('disabled');
+      $('#layout-panel .active-item button.end-element').removeClass('disabled');
     }
     if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.ReferencePageLayer) {
       $('#layout-panel .active-item button.re-anchor').removeClass('disabled');
+      $('#layout-panel .active-item button.end-element').removeClass('disabled');
     }
     $list = $("#selector-list");
     if ($list.children().length === 0) {
@@ -455,8 +457,10 @@ $(document).ready(function() {
     targetClass = $(this).data()["class"];
     if (targetClass === NFClass.PageComp) {
       $('#layout-panel .fullscreen-title').removeClass('disabled');
+      $('#layout-panel .switch-to-page').removeClass('disabled');
     } else {
       $('#layout-panel .fullscreen-title').addClass('disabled');
+      $('#layout-panel .switch-to-page').addClass('disabled');
     }
     if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
       $('#layout-panel .expose').removeClass('disabled');
@@ -481,6 +485,16 @@ $(document).ready(function() {
       model = {
         target: $('body').data().selectedLayers[0],
         command: "anchor"
+      };
+      return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+    }
+  });
+  $('#layout-panel .end-element').click(function(e) {
+    var model;
+    if (!$(this).hasClass('disabled')) {
+      model = {
+        target: $('body').data().selectedLayers[0],
+        command: "end-element"
       };
       return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }

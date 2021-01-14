@@ -137,11 +137,16 @@ try {
     return app.endUndoGroup();
   };
   runLayoutCommand = function(model) {
-    var activeComp;
-    app.beginUndoGroup("Run Layout Command");
-    activeComp = NFProject.activeComp();
-    activeComp.runLayoutCommand(model);
-    return app.endUndoGroup();
+    var activeComp, e, error;
+    try {
+      app.beginUndoGroup("Run Layout Command");
+      activeComp = NFProject.activeComp();
+      activeComp.runLayoutCommand(model);
+      return app.endUndoGroup();
+    } catch (error) {
+      e = error;
+      return alert("Error calling hook `runLayoutCommand`: " + e.message);
+    }
   };
   getFullPDFTree = function() {
     var allPageComps, contentTree, e, error, j, k, key, len, len1, outputTree, pageComp, pageCompArr, pageLayers, pdfNumber, shapeLayers, thisPDF, thisPage;

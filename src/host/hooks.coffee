@@ -100,10 +100,16 @@ try
     app.endUndoGroup()
 
   runLayoutCommand = (model) ->
-    app.beginUndoGroup "Run Layout Command"
-    activeComp = NFProject.activeComp()
-    activeComp.runLayoutCommand model
-    app.endUndoGroup()
+    try
+      # alert "start"
+      app.beginUndoGroup "Run Layout Command"
+      activeComp = NFProject.activeComp()
+      activeComp.runLayoutCommand model
+      app.endUndoGroup()
+      # alert "finished fine"
+    catch e
+      alert "Error calling hook `runLayoutCommand`: #{e.message}"
+    # alert "after hook tcb"
 
   getFullPDFTree = ->
     # Make an object with all the PDFs

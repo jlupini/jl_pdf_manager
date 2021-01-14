@@ -382,8 +382,10 @@ $(document).ready ->
 
     if singleLayer?.class is NFClass.PageLayer
       $('#layout-panel .active-item button.shrink-page').removeClass 'disabled'
+      $('#layout-panel .active-item button.end-element').removeClass 'disabled'
     if singleLayer?.class is NFClass.ReferencePageLayer
       $('#layout-panel .active-item button.re-anchor').removeClass 'disabled'
+      $('#layout-panel .active-item button.end-element').removeClass 'disabled'
 
     # Load Selector
     # FIXME: need a way to refresh this.
@@ -413,8 +415,10 @@ $(document).ready ->
     targetClass = $(this).data().class
     if targetClass is NFClass.PageComp
       $('#layout-panel .fullscreen-title').removeClass('disabled')
+      $('#layout-panel .switch-to-page').removeClass('disabled')
     else
       $('#layout-panel .fullscreen-title').addClass('disabled')
+      $('#layout-panel .switch-to-page').addClass('disabled')
 
     if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer
       $('#layout-panel .expose').removeClass('disabled')
@@ -435,6 +439,13 @@ $(document).ready ->
       model =
         target: $('body').data().selectedLayers[0]
         command: "anchor"
+      hook "runLayoutCommand(#{JSON.stringify model})"
+
+  $('#layout-panel .end-element').click (e) ->
+    unless $(this).hasClass 'disabled'
+      model =
+        target: $('body').data().selectedLayers[0]
+        command: "end-element"
       hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .fullscreen-title').click (e) ->
