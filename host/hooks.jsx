@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, runLayoutCommand, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, runLayoutCommand, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 try {
   openDocument = function(location) {
@@ -116,6 +116,88 @@ try {
   };
   transitionFadeScaleOut = function() {
     return alert("haven't done this yet");
+  };
+  focusOn = function(req) {
+    var activeComp, activeLayers, looseLayers, tightLayers;
+    app.beginUndoGroup("Change Focus (via NF Panel)");
+    if (req === "all") {
+      NFProject.activeComp().allLayers().forEach((function(_this) {
+        return function(layer) {
+          if (!(layer.getName().indexOf("FlightPath") >= 0)) {
+            return layer.setShy(false);
+          }
+        };
+      })(this));
+      NFProject.activeComp().$.hideShyLayers = true;
+    } else if (req === "pdf") {
+      activeComp = NFProject.activeComp();
+      activeLayers = activeComp.activeLayers();
+      if (activeLayers.isEmpty()) {
+        return alert("No layers active!");
+      }
+      looseLayers = new NFLayerCollection;
+      activeLayers.forEach((function(_this) {
+        return function(layer) {
+          var group;
+          if (!(layer instanceof NFCitationLayer || layer.getName().indexOf("Backing for") >= 0)) {
+            looseLayers.add(layer);
+          }
+          if (!layer.is(activeComp.greenscreenLayer())) {
+            looseLayers.add(layer.getChildren(true));
+          }
+          if (layer instanceof NFPageLayer) {
+            group = layer.getPaperLayerGroup();
+            if (group != null) {
+              looseLayers.add(group.getMembers());
+              return looseLayers.add(group.paperParent);
+            }
+          }
+        };
+      })(this));
+      activeComp.allLayers().forEach((function(_this) {
+        return function(layer) {
+          return layer.setShy(!looseLayers.containsLayer(layer));
+        };
+      })(this));
+      activeComp.$.hideShyLayers = true;
+    } else if (req === "active") {
+      activeComp = NFProject.activeComp();
+      activeLayers = activeComp.activeLayers();
+      if (activeLayers.isEmpty()) {
+        return alert("No layers active!");
+      }
+      tightLayers = new NFLayerCollection;
+      activeLayers.forEach((function(_this) {
+        return function(layer) {
+          var group, time;
+          if (!(layer instanceof NFCitationLayer || layer.getName().indexOf("Backing for") >= 0)) {
+            tightLayers.add(layer);
+          }
+          if (layer instanceof NFPageLayer) {
+            group = layer.getPaperLayerGroup();
+            if (group != null) {
+              tightLayers.add(group.paperParent);
+              tightLayers.add(group.getCitationLayer());
+              time = activeComp.getTime();
+              return group.getControlLayers().forEach(function(control) {
+                if (control.$.inPoint <= time && control.$.outPoint >= time) {
+                  return tightLayers.add(control);
+                }
+              });
+            }
+          }
+        };
+      })(this));
+      activeComp.allLayers().forEach((function(_this) {
+        return function(layer) {
+          return layer.setShy(!tightLayers.containsLayer(layer));
+        };
+      })(this));
+      activeComp.$.hideShyLayers = true;
+    } else {
+      alert("Error: Invalid focus request");
+    }
+    return app.endUndoGroup();
   };
   setBlendingMode = function(mode) {
     var modeCode;

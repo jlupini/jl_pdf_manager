@@ -84,6 +84,61 @@ try
   transitionFadeScaleOut = ->
     alert "haven't done this yet"
 
+  focusOn = (req) ->
+    app.beginUndoGroup "Change Focus (via NF Panel)"
+
+    if req is "all"
+      NFProject.activeComp().allLayers().forEach (layer) =>
+        layer.setShy no unless layer.getName().indexOf("FlightPath") >= 0
+
+      NFProject.activeComp().$.hideShyLayers = yes
+    else if req is "pdf"
+      activeComp = NFProject.activeComp()
+      activeLayers = activeComp.activeLayers()
+      return alert "No layers active!" if activeLayers.isEmpty()
+
+      looseLayers = new NFLayerCollection
+      activeLayers.forEach (layer) =>
+        looseLayers.add layer unless layer instanceof NFCitationLayer or layer.getName().indexOf("Backing for") >= 0
+        looseLayers.add layer.getChildren(yes) unless layer.is activeComp.greenscreenLayer()
+
+        # Add members in PDF group if we can find one
+        if layer instanceof NFPageLayer
+          group = layer.getPaperLayerGroup()
+          if group?
+            looseLayers.add group.getMembers()
+            looseLayers.add group.paperParent
+
+      activeComp.allLayers().forEach (layer) =>
+        layer.setShy not looseLayers.containsLayer(layer)
+
+      activeComp.$.hideShyLayers = yes
+    else if req is "active"
+      activeComp = NFProject.activeComp()
+      activeLayers = activeComp.activeLayers()
+      return alert "No layers active!" if activeLayers.isEmpty()
+
+      tightLayers = new NFLayerCollection
+      activeLayers.forEach (layer) =>
+        tightLayers.add layer unless layer instanceof NFCitationLayer or layer.getName().indexOf("Backing for") >= 0
+        if layer instanceof NFPageLayer
+          group = layer.getPaperLayerGroup()
+          if group?
+            tightLayers.add group.paperParent
+            tightLayers.add group.getCitationLayer()
+
+            time = activeComp.getTime()
+            group.getControlLayers().forEach (control) =>
+              tightLayers.add control if control.$.inPoint <= time and control.$.outPoint >= time
+
+      activeComp.allLayers().forEach (layer) =>
+        layer.setShy not tightLayers.containsLayer(layer)
+
+      activeComp.$.hideShyLayers = yes
+    else alert "Error: Invalid focus request"
+
+    app.endUndoGroup()
+
   setBlendingMode = (mode) ->
     app.beginUndoGroup "Set Blend Mode (via NF Panel)"
     if mode is "overlay"

@@ -11,7 +11,7 @@ $(document).ready(function() {
   hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')");
   latestAnnotationData = {};
   smartTimer = null;
-  POLLING_TIMEOUT = 350;
+  POLLING_TIMEOUT = 650;
   NFClass = {
     Comp: "NFComp",
     PartComp: "NFPartComp",
@@ -211,6 +211,15 @@ $(document).ready(function() {
   $('#toggle-guides').click(function() {
     return hook("toggleGuideLayers()");
   });
+  $('#shy-show-all').click(function() {
+    return hook("focusOn('all')");
+  });
+  $('#shy-focus-pdf').click(function() {
+    return hook("focusOn('pdf')");
+  });
+  $('#shy-focus-active').click(function() {
+    return hook("focusOn('active')");
+  });
   $("#out-transition .nf-fade").click(function() {
     return hook("transitionFadeOut()");
   });
@@ -384,8 +393,11 @@ $(document).ready(function() {
       return loadEmphasisPane();
     }
   });
-  loadLayoutPane = function() {
+  loadLayoutPane = function(refreshTree) {
     var $itemName, $list, data, singleLayer;
+    if (refreshTree == null) {
+      refreshTree = false;
+    }
     data = $("body").data();
     $itemName = $('#layout-panel .active-item .item-name');
     if (data.selectedLayers.length === 0) {
@@ -397,6 +409,7 @@ $(document).ready(function() {
       $itemName.text("Multiple layers selected");
     }
     $('#layout-panel .active-item .item-control button').addClass('disabled');
+    $('#layout-panel .active-item button.refresh-tree').removeClass('disabled');
     if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.PageLayer) {
       $('#layout-panel .active-item button.shrink-page').removeClass('disabled');
       $('#layout-panel .active-item button.end-element').removeClass('disabled');
@@ -406,7 +419,8 @@ $(document).ready(function() {
       $('#layout-panel .active-item button.end-element').removeClass('disabled');
     }
     $list = $("#selector-list");
-    if ($list.children().length === 0) {
+    if ($list.children().length === 0 || refreshTree === true) {
+      $list.empty();
       return hook("getFullPDFTree()", function(res) {
         var $newPDFItem, $newPageItem, $newShapeItem, $pageList, $shapeList, j, len, pageItem, pdfItem, ref, results, selectorData, shapeItem;
         selectorData = JSON.parse(res);
@@ -468,6 +482,11 @@ $(document).ready(function() {
       $('#layout-panel .expose').addClass('disabled');
     }
     return $(this).addClass('active');
+  });
+  $('#layout-panel .refresh-tree').click(function(e) {
+    if (!$(this).hasClass('disabled')) {
+      return loadLayoutPane(true);
+    }
   });
   $('#layout-panel .shrink-page').click(function(e) {
     var model;

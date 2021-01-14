@@ -31,7 +31,7 @@ $(document).ready ->
   #
   latestAnnotationData = {}
   smartTimer = null
-  POLLING_TIMEOUT = 350
+  POLLING_TIMEOUT = 650
   NFClass =
     Comp: "NFComp"
     PartComp: "NFPartComp"
@@ -199,6 +199,12 @@ $(document).ready ->
     hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_SetupHighlightLayer.jsx')"
   $('#toggle-guides').click ->
     hook "toggleGuideLayers()"
+  $('#shy-show-all').click ->
+    hook "focusOn('all')"
+  $('#shy-focus-pdf').click ->
+    hook "focusOn('pdf')"
+  $('#shy-focus-active').click ->
+    hook "focusOn('active')"
 
 
   $("#out-transition .nf-fade").click ->
@@ -366,7 +372,7 @@ $(document).ready ->
       pickerActive = no
       loadEmphasisPane()
 
-  loadLayoutPane = ->
+  loadLayoutPane = (refreshTree = no) ->
     data = $("body").data()
 
     $itemName = $('#layout-panel .active-item .item-name')
@@ -380,6 +386,8 @@ $(document).ready ->
 
     $('#layout-panel .active-item .item-control button').addClass 'disabled'
 
+    $('#layout-panel .active-item button.refresh-tree').removeClass 'disabled'
+
     if singleLayer?.class is NFClass.PageLayer
       $('#layout-panel .active-item button.shrink-page').removeClass 'disabled'
       $('#layout-panel .active-item button.end-element').removeClass 'disabled'
@@ -388,9 +396,9 @@ $(document).ready ->
       $('#layout-panel .active-item button.end-element').removeClass 'disabled'
 
     # Load Selector
-    # FIXME: need a way to refresh this.
     $list = $("#selector-list")
-    if $list.children().length is 0
+    if $list.children().length is 0 or refreshTree is yes
+      $list.empty()
       hook "getFullPDFTree()", (res) ->
         selectorData = JSON.parse res
         console.log selectorData
@@ -426,6 +434,10 @@ $(document).ready ->
       $('#layout-panel .expose').addClass('disabled')
 
     $(this).addClass 'active'
+
+  $('#layout-panel .refresh-tree').click (e) ->
+    unless $(this).hasClass 'disabled'
+      loadLayoutPane yes
 
   $('#layout-panel .shrink-page').click (e) ->
     unless $(this).hasClass 'disabled'

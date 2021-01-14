@@ -32,6 +32,7 @@
 			<div class="item-name"></div>
 			<div class="item-info"></div>
 			<div class="item-control">
+				<button class="refresh-tree">Refresh</button>
 				<button class="shrink-page disabled">Shrink Page</button>
 				<button class="re-anchor disabled">Re-Anchor</button>
 				<button class="end-element disabled">End Element</button>
@@ -120,9 +121,16 @@
 	</div>
 
 	<div id="bottom-button-bar">
-		<button id="convert-shape" class="ui-icon ui-icon-shape">Convert Shape</button>
-		<button id="toggle-guides" class="ui-icon ui-icon-guides">Toggle Guides</button>
-		<button id="classic-highlight" class="ui-icon ui-icon-highlight">Classic Highlighter</button>
+		<div class="group">
+			<button id="convert-shape" class="ui-icon ui-icon-shape">Convert Shape</button>
+			<button id="toggle-guides" class="ui-icon ui-icon-guides">Toggle Guides</button>
+			<button id="classic-highlight" class="ui-icon ui-icon-highlight">Classic Highlighter</button>
+		</div>
+		<div class="group shy">
+			<button id="shy-show-all">Show All</button>
+			<button id="shy-focus-pdf">PDF Focus</button>
+			<button id="shy-focus-active">Active Focus</button>
+		</div>
 		<p id="tempDisplayText"></p>
 	</div>
 
