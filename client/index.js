@@ -11,7 +11,7 @@ $(document).ready(function() {
   hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')");
   latestAnnotationData = {};
   smartTimer = null;
-  POLLING_TIMEOUT = 650;
+  POLLING_TIMEOUT = 950;
   NFClass = {
     Comp: "NFComp",
     PartComp: "NFPartComp",
@@ -247,7 +247,7 @@ $(document).ready(function() {
   $("button.emphasizer-button").click(function() {
     return hook("emphasisLayerSelected()", function(res) {
       if (res === "true") {
-        return alert("already emphasisezd");
+        return hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_Emphasizer.jsx')");
       } else {
         return hook("makeEmphasisLayer()");
       }

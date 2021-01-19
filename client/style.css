@@ -11,6 +11,8 @@ body {
     color: red; }
   body.NFEmphasisLayer #emphasizer-panel {
     display: block; }
+  body.NFEmphasisLayer.NFPartComp #layout-panel {
+    display: none; }
   body.NFPageLayer #tab-page-layer {
     color: red; }
   body.NFPageComp #tab-page-comp {

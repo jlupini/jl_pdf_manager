@@ -31,7 +31,7 @@ $(document).ready ->
   #
   latestAnnotationData = {}
   smartTimer = null
-  POLLING_TIMEOUT = 650
+  POLLING_TIMEOUT = 950
   NFClass =
     Comp: "NFComp"
     PartComp: "NFPartComp"
@@ -227,7 +227,7 @@ $(document).ready ->
   $("button.emphasizer-button").click ->
     hook "emphasisLayerSelected()", (res) ->
       if res is "true"
-        alert "already emphasisezd"
+        hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_Emphasizer.jsx')"
       else hook "makeEmphasisLayer()"
 
   $("button.blend-button").click ->
