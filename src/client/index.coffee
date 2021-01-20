@@ -31,7 +31,9 @@ $(document).ready ->
   #
   latestAnnotationData = {}
   smartTimer = null
-  POLLING_TIMEOUT = 950
+  POLLING_INTERVAL = 1000
+  POLLING_TIMEOUT = 1950
+  MAX_POLLING_ITERATIONS = 600
   NFClass =
     Comp: "NFComp"
     PartComp: "NFPartComp"
@@ -129,7 +131,7 @@ $(document).ready ->
   compLayerType = ""
   timerCounter = 0
   checkForUpdates = ->
-    if timerCounter >= 600
+    if timerCounter >= MAX_POLLING_ITERATIONS
       console.log "threshold reached - stopping smart updates"
       timerCounter = 0
       $('#smart-toggle').click()
@@ -186,7 +188,7 @@ $(document).ready ->
     else
       $("#smart-toggle").addClass("running")
       $('#one-page-annotations').addClass("disabled")
-      smartTimer = setInterval checkForUpdates, 500
+      smartTimer = setInterval checkForUpdates, POLLING_INTERVAL
 
   # Default the timer to on
   $('#smart-toggle').click()

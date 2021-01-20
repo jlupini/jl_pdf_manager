@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var NFClass, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var MAX_POLLING_ITERATIONS, NFClass, POLLING_INTERVAL, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -11,7 +11,9 @@ $(document).ready(function() {
   hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')");
   latestAnnotationData = {};
   smartTimer = null;
-  POLLING_TIMEOUT = 950;
+  POLLING_INTERVAL = 1000;
+  POLLING_TIMEOUT = 1950;
+  MAX_POLLING_ITERATIONS = 600;
   NFClass = {
     Comp: "NFComp",
     PartComp: "NFPartComp",
@@ -131,7 +133,7 @@ $(document).ready(function() {
   compLayerType = "";
   timerCounter = 0;
   checkForUpdates = function() {
-    if (timerCounter >= 600) {
+    if (timerCounter >= MAX_POLLING_ITERATIONS) {
       console.log("threshold reached - stopping smart updates");
       timerCounter = 0;
       return $('#smart-toggle').click();
@@ -195,7 +197,7 @@ $(document).ready(function() {
     } else {
       $("#smart-toggle").addClass("running");
       $('#one-page-annotations').addClass("disabled");
-      return smartTimer = setInterval(checkForUpdates, 500);
+      return smartTimer = setInterval(checkForUpdates, POLLING_INTERVAL);
     }
   });
   $('#smart-toggle').click();
