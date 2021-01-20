@@ -412,6 +412,7 @@ $(document).ready(function() {
     $('#layout-panel .active-item button.refresh-tree').removeClass('disabled');
     if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.PageLayer) {
       $('#layout-panel .active-item button.shrink-page').removeClass('disabled');
+      $('#layout-panel .active-item button.grow-page').removeClass('disabled');
       $('#layout-panel .active-item button.end-element').removeClass('disabled');
     }
     if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.ReferencePageLayer) {
@@ -472,9 +473,11 @@ $(document).ready(function() {
     targetClass = targetData["class"];
     if (targetClass === NFClass.PageComp) {
       $('#layout-panel .fullscreen-title').removeClass('disabled');
+      $('#layout-panel .add-small').removeClass('disabled');
       $('#layout-panel .switch-to-page').removeClass('disabled');
     } else {
       $('#layout-panel .fullscreen-title').addClass('disabled');
+      $('#layout-panel .add-small').addClass('disabled');
       $('#layout-panel .switch-to-page').addClass('disabled');
     }
     if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
@@ -501,6 +504,16 @@ $(document).ready(function() {
       model = {
         target: $('body').data().selectedLayers[0],
         command: "shrink-page"
+      };
+      return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+    }
+  });
+  $('#layout-panel .grow-page').click(function(e) {
+    var model;
+    if (!$(this).hasClass('disabled')) {
+      model = {
+        target: $('body').data().selectedLayers[0],
+        command: "fullscreen-title"
       };
       return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }
@@ -533,6 +546,19 @@ $(document).ready(function() {
         model = {
           target: $activeItem.data(),
           command: "fullscreen-title"
+        };
+        return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+      }
+    }
+  });
+  $('#layout-panel .add-small').click(function(e) {
+    var $activeItem, model;
+    if (!$(this).hasClass('disabled')) {
+      $activeItem = $('#selector-list li.active');
+      if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
+        model = {
+          target: $activeItem.data(),
+          command: "add-small"
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
