@@ -224,6 +224,9 @@ try
 
       model.bodyClass = "#{layerType} #{compType}"
 
+      if activeComp instanceof NFPartComp
+        model.activePDF = activeComp.activePDF().getPDFNumber()
+
       # Selected Layer Names
       model.selectedLayers = []
       selectedLayers.forEach (layer) =>

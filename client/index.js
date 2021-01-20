@@ -471,25 +471,19 @@ $(document).ready(function() {
     $('#selector-list li').removeClass('active');
     targetData = $(this).data();
     targetClass = targetData["class"];
+    $('#layout-panel .selector-buttons button').addClass('disabled');
     if (targetClass === NFClass.PageComp) {
       $('#layout-panel .fullscreen-title').removeClass('disabled');
       $('#layout-panel .add-small').removeClass('disabled');
-      $('#layout-panel .switch-to-page').removeClass('disabled');
-    } else {
-      $('#layout-panel .fullscreen-title').addClass('disabled');
-      $('#layout-panel .add-small').addClass('disabled');
-      $('#layout-panel .switch-to-page').addClass('disabled');
+      if (targetData.pdfNumber === $('body').data().activePDF) {
+        $('#layout-panel .switch-to-page').removeClass('disabled');
+      }
     }
     if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
       $('#layout-panel .expose').removeClass('disabled');
       if (targetData.name.toLowerCase().indexOf('expand') >= 0) {
         $('#layout-panel .expand').removeClass('disabled');
-      } else {
-        $('#layout-panel .expand').addClass('disabled');
       }
-    } else {
-      $('#layout-panel .expose').addClass('disabled');
-      $('#layout-panel .expand').addClass('disabled');
     }
     return $(this).addClass('active');
   });
@@ -559,6 +553,19 @@ $(document).ready(function() {
         model = {
           target: $activeItem.data(),
           command: "add-small"
+        };
+        return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+      }
+    }
+  });
+  $('#layout-panel .switch-to-page').click(function(e) {
+    var $activeItem, model;
+    if (!$(this).hasClass('disabled')) {
+      $activeItem = $('#selector-list li.active');
+      if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
+        model = {
+          target: $activeItem.data(),
+          command: "switch-to-page"
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }

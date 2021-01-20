@@ -422,24 +422,20 @@ $(document).ready ->
     $('#selector-list li').removeClass('active')
     targetData = $(this).data()
     targetClass = targetData.class
+
+    $('#layout-panel .selector-buttons button').addClass('disabled')
     if targetClass is NFClass.PageComp
       $('#layout-panel .fullscreen-title').removeClass('disabled')
       $('#layout-panel .add-small').removeClass('disabled')
-      $('#layout-panel .switch-to-page').removeClass('disabled')
-    else
-      $('#layout-panel .fullscreen-title').addClass('disabled')
-      $('#layout-panel .add-small').addClass('disabled')
-      $('#layout-panel .switch-to-page').addClass('disabled')
+      if targetData.pdfNumber is $('body').data().activePDF
+        $('#layout-panel .switch-to-page').removeClass('disabled')
 
     if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer
       $('#layout-panel .expose').removeClass('disabled')
       if targetData.name.toLowerCase().indexOf('expand') >= 0
         $('#layout-panel .expand').removeClass('disabled')
-      else
-        $('#layout-panel .expand').addClass('disabled')
-    else
-      $('#layout-panel .expose').addClass('disabled')
-      $('#layout-panel .expand').addClass('disabled')
+
+
 
     $(this).addClass 'active'
 
@@ -491,6 +487,15 @@ $(document).ready ->
         model =
           target: $activeItem.data()
           command: "add-small"
+        hook "runLayoutCommand(#{JSON.stringify model})"
+
+  $('#layout-panel .switch-to-page').click (e) ->
+    unless $(this).hasClass 'disabled'
+      $activeItem = $('#selector-list li.active')
+      if $activeItem?.data().class is NFClass.PageComp
+        model =
+          target: $activeItem.data()
+          command: "switch-to-page"
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .expose').click (e) ->

@@ -295,6 +295,9 @@ try {
         layerType = "multiple-layers";
       }
       model.bodyClass = layerType + " " + compType;
+      if (activeComp instanceof NFPartComp) {
+        model.activePDF = activeComp.activePDF().getPDFNumber();
+      }
       model.selectedLayers = [];
       selectedLayers.forEach((function(_this) {
         return function(layer) {
