@@ -281,52 +281,60 @@ try {
     }
   };
   getPollingData = function() {
-    var activeComp, compType, layerType, model, selectedLayers;
-    model = {};
-    activeComp = NFProject.activeComp();
-    if (activeComp != null) {
-      compType = activeComp.simplify()["class"];
-      selectedLayers = NFProject.selectedLayers();
-      if (selectedLayers.isEmpty()) {
-        layerType = "no-layer";
-      } else if (selectedLayers.count() === 1) {
-        layerType = selectedLayers.get(0).simplify()["class"];
-      } else {
-        layerType = "multiple-layers";
-      }
-      model.bodyClass = layerType + " " + compType;
-      if (activeComp instanceof NFPartComp) {
-        model.activePDF = activeComp.activePDF().getPDFNumber();
-      }
-      model.selectedLayers = [];
-      selectedLayers.forEach((function(_this) {
-        return function(layer) {
-          return model.selectedLayers.push(layer.simplify());
-        };
-      })(this));
-      if (selectedLayers.count() === 1) {
-        model.effects = [];
-        selectedLayers.get(0).aeq().forEachEffect((function(_this) {
-          return function(e, i) {
-            if (e.matchName.indexOf("AV_") >= 0) {
-              model.effects.push({
-                name: e.name,
-                matchName: e.matchName,
-                properties: {}
-              });
-              return e.forEach(function(prop) {
-                return model.effects[i - 1].properties[prop.name] = {
-                  value: prop.value
-                };
-              });
-            }
+    var activeComp, activePDF, compType, e, error, layerType, model, selectedLayers;
+    try {
+      model = {};
+      activeComp = NFProject.activeComp();
+      if (activeComp != null) {
+        compType = activeComp.simplify()["class"];
+        selectedLayers = NFProject.selectedLayers();
+        if (selectedLayers.isEmpty()) {
+          layerType = "no-layer";
+        } else if (selectedLayers.count() === 1) {
+          layerType = selectedLayers.get(0).simplify()["class"];
+        } else {
+          layerType = "multiple-layers";
+        }
+        model.bodyClass = layerType + " " + compType;
+        if (activeComp instanceof NFPartComp) {
+          activePDF = activeComp.activePDF();
+          if (activePDF != null) {
+            model.activePDF = typeof activePDF.getPDFNumber === "function" ? activePDF.getPDFNumber() : void 0;
+          }
+        }
+        model.selectedLayers = [];
+        selectedLayers.forEach((function(_this) {
+          return function(layer) {
+            return model.selectedLayers.push(layer.simplify());
           };
         })(this));
+        if (selectedLayers.count() === 1) {
+          model.effects = [];
+          selectedLayers.get(0).aeq().forEachEffect((function(_this) {
+            return function(e, i) {
+              if (e.matchName.indexOf("AV_") >= 0) {
+                model.effects.push({
+                  name: e.name,
+                  matchName: e.matchName,
+                  properties: {}
+                });
+                return e.forEach(function(prop) {
+                  return model.effects[i - 1].properties[prop.name] = {
+                    value: prop.value
+                  };
+                });
+              }
+            };
+          })(this));
+        }
+      } else {
+        model.bodyClass = "no-comp";
       }
-    } else {
-      model.bodyClass = "no-comp";
+      return JSON.stringify(model);
+    } catch (error) {
+      e = error;
+      return alert("Error calling hook `runLayoutCommand`: " + e.message);
     }
-    return JSON.stringify(model);
   };
   getActivePageFile = function() {
     var activeComp;

@@ -209,47 +209,51 @@ try
 
 
   getPollingData = ->
-    model = {}
-    activeComp = NFProject.activeComp()
-    if activeComp?
-      compType = activeComp.simplify().class
+    try
+      model = {}
+      activeComp = NFProject.activeComp()
+      if activeComp?
+        compType = activeComp.simplify().class
 
-      selectedLayers = NFProject.selectedLayers()
-      if selectedLayers.isEmpty()
-        layerType = "no-layer"
-      else if selectedLayers.count() is 1
-        layerType = selectedLayers.get(0).simplify().class
+        selectedLayers = NFProject.selectedLayers()
+        if selectedLayers.isEmpty()
+          layerType = "no-layer"
+        else if selectedLayers.count() is 1
+          layerType = selectedLayers.get(0).simplify().class
 
-      else layerType = "multiple-layers"
+        else layerType = "multiple-layers"
 
-      model.bodyClass = "#{layerType} #{compType}"
+        model.bodyClass = "#{layerType} #{compType}"
 
-      if activeComp instanceof NFPartComp
-        model.activePDF = activeComp.activePDF().getPDFNumber()
+        if activeComp instanceof NFPartComp
+          activePDF = activeComp.activePDF()
+          model.activePDF = activePDF.getPDFNumber?() if activePDF?
 
-      # Selected Layer Names
-      model.selectedLayers = []
-      selectedLayers.forEach (layer) =>
-        model.selectedLayers.push layer.simplify()
+        # Selected Layer Names
+        model.selectedLayers = []
+        selectedLayers.forEach (layer) =>
+          model.selectedLayers.push layer.simplify()
 
-      # Single Layer Effects
-      if selectedLayers.count() is 1
-        model.effects = []
-        # Using aequery for the first time
-        selectedLayers.get(0).aeq().forEachEffect (e, i) =>
-          if e.matchName.indexOf("AV_") >= 0
-            # $.bp()
-            model.effects.push
-              name: e.name
-              matchName: e.matchName
-              properties: {}
-            e.forEach (prop) =>
-              model.effects[i-1].properties[prop.name] =
-                value: prop.value
-    else
-      model.bodyClass = "no-comp"
+        # Single Layer Effects
+        if selectedLayers.count() is 1
+          model.effects = []
+          # Using aequery for the first time
+          selectedLayers.get(0).aeq().forEachEffect (e, i) =>
+            if e.matchName.indexOf("AV_") >= 0
+              # $.bp()
+              model.effects.push
+                name: e.name
+                matchName: e.matchName
+                properties: {}
+              e.forEach (prop) =>
+                model.effects[i-1].properties[prop.name] =
+                  value: prop.value
+      else
+        model.bodyClass = "no-comp"
 
-    return JSON.stringify model
+      return JSON.stringify model
+    catch e
+      alert "Error calling hook `runLayoutCommand`: #{e.message}"
 
   getActivePageFile = ->
     activeComp = NFProject.activeComp()
