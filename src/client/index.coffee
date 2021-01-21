@@ -429,7 +429,7 @@ $(document).ready ->
     if targetClass is NFClass.PageComp
       $('#layout-panel .fullscreen-title').removeClass('disabled')
       $('#layout-panel .add-small').removeClass('disabled')
-      if targetData.pdfNumber is $('body').data().activePDF
+      if targetData.pdfNumber is $('body').data().activePDF and targetData.pageNumber isnt $('body').data().activePage.pageNumber
         $('#layout-panel .switch-to-page').removeClass('disabled')
 
     if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer

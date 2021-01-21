@@ -300,6 +300,7 @@ try {
           activePDF = activeComp.activePDF();
           if (activePDF != null) {
             model.activePDF = typeof activePDF.getPDFNumber === "function" ? activePDF.getPDFNumber() : void 0;
+            model.activePage = activeComp.activePage().simplify();
           }
         }
         model.selectedLayers = [];
@@ -333,7 +334,7 @@ try {
       return JSON.stringify(model);
     } catch (error) {
       e = error;
-      return alert("Error calling hook `runLayoutCommand`: " + e.message);
+      return alert("Error calling hook `getPollingData`: " + e.message);
     }
   };
   getActivePageFile = function() {

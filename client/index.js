@@ -477,7 +477,7 @@ $(document).ready(function() {
     if (targetClass === NFClass.PageComp) {
       $('#layout-panel .fullscreen-title').removeClass('disabled');
       $('#layout-panel .add-small').removeClass('disabled');
-      if (targetData.pdfNumber === $('body').data().activePDF) {
+      if (targetData.pdfNumber === $('body').data().activePDF && targetData.pageNumber !== $('body').data().activePage.pageNumber) {
         $('#layout-panel .switch-to-page').removeClass('disabled');
       }
     }

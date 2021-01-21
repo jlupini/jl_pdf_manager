@@ -227,7 +227,9 @@ try
 
         if activeComp instanceof NFPartComp
           activePDF = activeComp.activePDF()
-          model.activePDF = activePDF.getPDFNumber?() if activePDF?
+          if activePDF?
+            model.activePDF = activePDF.getPDFNumber?()
+            model.activePage = activeComp.activePage().simplify()
 
         # Selected Layer Names
         model.selectedLayers = []
@@ -253,7 +255,7 @@ try
 
       return JSON.stringify model
     catch e
-      alert "Error calling hook `runLayoutCommand`: #{e.message}"
+      alert "Error calling hook `getPollingData`: #{e.message}"
 
   getActivePageFile = ->
     activeComp = NFProject.activeComp()
