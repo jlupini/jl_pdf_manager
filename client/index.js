@@ -255,6 +255,11 @@ $(document).ready(function() {
       }
     });
   });
+  $("button.gaussy-button").click(function() {
+    return hook("NFProject.activeComp().addGaussy()", function(res) {
+      return null;
+    });
+  });
   $("button.blend-button").click(function() {
     return $('#blend-menu').toggle();
   });

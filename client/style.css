@@ -162,6 +162,7 @@ body {
 
 #layer-controls > div {
   position: relative;
+  display: inline-block;
   vertical-align: bottom;
   width: 80px; }
 

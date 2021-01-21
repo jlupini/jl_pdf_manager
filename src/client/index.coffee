@@ -226,11 +226,16 @@ $(document).ready ->
   $("#in-transition .clear").click ->
     hook "transitionClearIn()"
 
+
   $("button.emphasizer-button").click ->
     hook "emphasisLayerSelected()", (res) ->
       if res is "true"
         hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_Emphasizer.jsx')"
       else hook "makeEmphasisLayer()"
+
+  $("button.gaussy-button").click ->
+    hook "NFProject.activeComp().addGaussy()", (res) ->
+      return null
 
   $("button.blend-button").click ->
     $('#blend-menu').toggle()
