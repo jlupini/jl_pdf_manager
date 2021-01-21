@@ -281,7 +281,7 @@ try {
     }
   };
   getPollingData = function() {
-    var activeComp, activePage, aeqLayer, allLayers, compType, e, error, i, j, k, layerType, model, prevLayer, ref, ref1, ref2, selectedAVLayers, selectedLayer, simpLayer, singleSelectedLayerSimplified, thisLayer;
+    var activeComp, activePage, aeqLayer, allLayers, compType, e, error, i, j, k, layerType, model, prevLayer, ref, ref1, ref2, ref3, selectedAVLayers, selectedLayer, simpLayer, singleSelectedLayerSimplified, thisLayer;
     try {
       model = {};
       activeComp = app.project.activeItem;
@@ -294,7 +294,7 @@ try {
             prevLayer = null;
             for (i = j = 1, ref = allLayers.length; 1 <= ref ? j <= ref : j >= ref; i = 1 <= ref ? ++j : --j) {
               thisLayer = allLayers[i];
-              if (((ref1 = thisLayer.source) != null ? ref1.name.indexOf("NFPage") : void 0) >= 0 && thisLayer.name.indexOf('[ref]') < 0 && thisLayer.opacity.value !== 0) {
+              if (((ref1 = thisLayer.source) != null ? ref1.name.includes("NFPage") : void 0) && !thisLayer.name.includes('[ref]') && thisLayer.opacity.value !== 0 && (thisLayer.inPoint <= (ref2 = activeComp.time) && ref2 <= thisLayer.outPoint)) {
                 if (prevLayer != null) {
                   if (thisLayer.index < prevLayer.index) {
                     activePage = thisLayer;
@@ -322,7 +322,7 @@ try {
           aeqLayer = new aeq.Layer(selectedLayer);
           aeqLayer.forEachEffect((function(_this) {
             return function(e, i) {
-              if (e.matchName.indexOf("AV_") >= 0) {
+              if (e.matchName.includes("AV_")) {
                 model.effects.push({
                   name: e.name,
                   matchName: e.matchName,
@@ -343,7 +343,7 @@ try {
         if (singleSelectedLayerSimplified != null) {
           model.selectedLayers.push(singleSelectedLayerSimplified);
         } else if (selectedAVLayers.length > 0) {
-          for (i = k = 0, ref2 = selectedAVLayers.length - 1; 0 <= ref2 ? k <= ref2 : k >= ref2; i = 0 <= ref2 ? ++k : --k) {
+          for (i = k = 0, ref3 = selectedAVLayers.length - 1; 0 <= ref3 ? k <= ref3 : k >= ref3; i = 0 <= ref3 ? ++k : --k) {
             simpLayer = selectedAVLayers[i].simpleReflection();
             model.selectedLayers.push(simpLayer);
           }

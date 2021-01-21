@@ -224,7 +224,7 @@ try
             prevLayer = null
             for i in [1..(allLayers.length)]
               thisLayer = allLayers[i]
-              if thisLayer.source?.name.indexOf("NFPage") >= 0 and thisLayer.name.indexOf('[ref]') < 0 and thisLayer.opacity.value isnt 0
+              if thisLayer.source?.name.includes("NFPage") and not thisLayer.name.includes('[ref]') and thisLayer.opacity.value isnt 0 and thisLayer.inPoint <= activeComp.time <= thisLayer.outPoint
                 if prevLayer?
                   if thisLayer.index < prevLayer.index
                     activePage = thisLayer
@@ -250,7 +250,7 @@ try
           # Using aequery for the first time
           aeqLayer = new aeq.Layer selectedLayer
           aeqLayer.forEachEffect (e, i) =>
-            if e.matchName.indexOf("AV_") >= 0
+            if e.matchName.includes("AV_")
               # $.bp()
               model.effects.push
                 name: e.name
