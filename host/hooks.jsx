@@ -281,37 +281,46 @@ try {
     }
   };
   getPollingData = function() {
-    var activeComp, activePDF, compType, e, error, layerType, model, selectedLayers;
+    var activeComp, activePage, aeqLayer, allLayers, compType, e, error, i, j, k, layerType, model, prevLayer, ref, ref1, ref2, selectedAVLayers, selectedLayer, simpLayer, singleSelectedLayerSimplified, thisLayer;
     try {
       model = {};
-      activeComp = NFProject.activeComp();
+      activeComp = app.project.activeItem;
       if (activeComp != null) {
-        compType = activeComp.simplify()["class"];
-        selectedLayers = NFProject.selectedLayers();
-        if (selectedLayers.isEmpty()) {
-          layerType = "no-layer";
-        } else if (selectedLayers.count() === 1) {
-          layerType = selectedLayers.get(0).simplify()["class"];
-        } else {
-          layerType = "multiple-layers";
-        }
-        model.bodyClass = layerType + " " + compType;
-        if (activeComp instanceof NFPartComp) {
-          activePDF = activeComp.activePDF();
-          if (activePDF != null) {
-            model.activePDF = typeof activePDF.getPDFNumber === "function" ? activePDF.getPDFNumber() : void 0;
-            model.activePage = activeComp.activePage().simplify();
+        compType = activeComp.simpleReflection()["class"];
+        if (compType === "NFPartComp") {
+          activePage = null;
+          allLayers = activeComp.layers;
+          if (allLayers.length !== 0) {
+            prevLayer = null;
+            for (i = j = 1, ref = allLayers.length; 1 <= ref ? j <= ref : j >= ref; i = 1 <= ref ? ++j : --j) {
+              thisLayer = allLayers[i];
+              if (((ref1 = thisLayer.source) != null ? ref1.name.indexOf("NFPage") : void 0) >= 0 && thisLayer.name.indexOf('[ref]') < 0 && thisLayer.opacity.value !== 0) {
+                if (prevLayer != null) {
+                  if (thisLayer.index < prevLayer.index) {
+                    activePage = thisLayer;
+                  }
+                } else {
+                  activePage = thisLayer;
+                }
+                prevLayer = thisLayer;
+              }
+            }
+          }
+          if (activePage != null) {
+            model.activePDF = activePage.source.getPDFNumber();
+            model.activePage = activePage.simpleReflection();
           }
         }
-        model.selectedLayers = [];
-        selectedLayers.forEach((function(_this) {
-          return function(layer) {
-            return model.selectedLayers.push(layer.simplify());
-          };
-        })(this));
-        if (selectedLayers.count() === 1) {
+        selectedAVLayers = app.project.activeItem.selectedLayers;
+        if (selectedAVLayers.length === 0) {
+          layerType = "no-layer";
+        } else if (selectedAVLayers.length === 1) {
+          selectedLayer = selectedAVLayers[0];
+          singleSelectedLayerSimplified = selectedLayer.simpleReflection();
+          layerType = singleSelectedLayerSimplified["class"];
           model.effects = [];
-          selectedLayers.get(0).aeq().forEachEffect((function(_this) {
+          aeqLayer = new aeq.Layer(selectedLayer);
+          aeqLayer.forEachEffect((function(_this) {
             return function(e, i) {
               if (e.matchName.indexOf("AV_") >= 0) {
                 model.effects.push({
@@ -327,7 +336,19 @@ try {
               }
             };
           })(this));
+        } else {
+          layerType = "multiple-layers";
         }
+        model.selectedLayers = [];
+        if (singleSelectedLayerSimplified != null) {
+          model.selectedLayers.push(singleSelectedLayerSimplified);
+        } else if (selectedAVLayers.length > 0) {
+          for (i = k = 0, ref2 = selectedAVLayers.length - 1; 0 <= ref2 ? k <= ref2 : k >= ref2; i = 0 <= ref2 ? ++k : --k) {
+            simpLayer = selectedAVLayers[i].simpleReflection();
+            model.selectedLayers.push(simpLayer);
+          }
+        }
+        model.bodyClass = layerType + " " + compType;
       } else {
         model.bodyClass = "no-comp";
       }

@@ -209,38 +209,47 @@ try
 
 
   getPollingData = ->
+    # NOTE: We use native objects here to speed up polling
     try
       model = {}
-      activeComp = NFProject.activeComp()
+      activeComp = app.project.activeItem
       if activeComp?
-        compType = activeComp.simplify().class
+        compType = activeComp.simpleReflection().class
 
-        selectedLayers = NFProject.selectedLayers()
-        if selectedLayers.isEmpty()
+        if compType is "NFPartComp"
+          # check for active page and PDF
+          activePage = null
+          allLayers = activeComp.layers
+          unless allLayers.length is 0
+            prevLayer = null
+            for i in [1..(allLayers.length)]
+              thisLayer = allLayers[i]
+              if thisLayer.source?.name.indexOf("NFPage") >= 0 and thisLayer.name.indexOf('[ref]') < 0 and thisLayer.opacity.value isnt 0
+                if prevLayer?
+                  if thisLayer.index < prevLayer.index
+                    activePage = thisLayer
+                else
+                  activePage = thisLayer
+                prevLayer = thisLayer
+
+          if activePage?
+            model.activePDF = activePage.source.getPDFNumber()
+            model.activePage = activePage.simpleReflection()
+
+        selectedAVLayers = app.project.activeItem.selectedLayers
+        if selectedAVLayers.length is 0
           layerType = "no-layer"
-        else if selectedLayers.count() is 1
-          layerType = selectedLayers.get(0).simplify().class
+        else if selectedAVLayers.length is 1
+          selectedLayer = selectedAVLayers[0]
+          singleSelectedLayerSimplified = selectedLayer.simpleReflection()
+          layerType = singleSelectedLayerSimplified.class
 
-        else layerType = "multiple-layers"
 
-        model.bodyClass = "#{layerType} #{compType}"
-
-        if activeComp instanceof NFPartComp
-          activePDF = activeComp.activePDF()
-          if activePDF?
-            model.activePDF = activePDF.getPDFNumber?()
-            model.activePage = activeComp.activePage().simplify()
-
-        # Selected Layer Names
-        model.selectedLayers = []
-        selectedLayers.forEach (layer) =>
-          model.selectedLayers.push layer.simplify()
-
-        # Single Layer Effects
-        if selectedLayers.count() is 1
+          #Add the FX
           model.effects = []
           # Using aequery for the first time
-          selectedLayers.get(0).aeq().forEachEffect (e, i) =>
+          aeqLayer = new aeq.Layer selectedLayer
+          aeqLayer.forEachEffect (e, i) =>
             if e.matchName.indexOf("AV_") >= 0
               # $.bp()
               model.effects.push
@@ -250,6 +259,20 @@ try
               e.forEach (prop) =>
                 model.effects[i-1].properties[prop.name] =
                   value: prop.value
+
+        else layerType = "multiple-layers"
+
+        # Selected Layer Names
+        model.selectedLayers = []
+        if singleSelectedLayerSimplified?
+          model.selectedLayers.push singleSelectedLayerSimplified
+        else if selectedAVLayers.length > 0
+          for i in [0..(selectedAVLayers.length-1)]
+            simpLayer = selectedAVLayers[i].simpleReflection()
+            model.selectedLayers.push simpLayer
+
+        model.bodyClass = "#{layerType} #{compType}"
+
       else
         model.bodyClass = "no-comp"
 
