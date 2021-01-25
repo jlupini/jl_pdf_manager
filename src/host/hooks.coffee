@@ -213,7 +213,7 @@ try
     try
       model = {}
       activeComp = app.project.activeItem
-      if activeComp?
+      if activeComp? and activeComp instanceof CompItem
         compType = activeComp.simpleReflection().class
 
         if compType is "NFPartComp"
@@ -236,14 +236,13 @@ try
             model.activePDF = activePage.source.getPDFNumber()
             model.activePage = activePage.simpleReflection()
 
-        selectedAVLayers = app.project.activeItem.selectedLayers
+        selectedAVLayers = activeComp.selectedLayers
         if selectedAVLayers.length is 0
           layerType = "no-layer"
         else if selectedAVLayers.length is 1
           selectedLayer = selectedAVLayers[0]
           singleSelectedLayerSimplified = selectedLayer.simpleReflection()
           layerType = singleSelectedLayerSimplified.class
-
 
           #Add the FX
           model.effects = []

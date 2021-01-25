@@ -285,7 +285,7 @@ try {
     try {
       model = {};
       activeComp = app.project.activeItem;
-      if (activeComp != null) {
+      if ((activeComp != null) && activeComp instanceof CompItem) {
         compType = activeComp.simpleReflection()["class"];
         if (compType === "NFPartComp") {
           activePage = null;
@@ -311,7 +311,7 @@ try {
             model.activePage = activePage.simpleReflection();
           }
         }
-        selectedAVLayers = app.project.activeItem.selectedLayers;
+        selectedAVLayers = activeComp.selectedLayers;
         if (selectedAVLayers.length === 0) {
           layerType = "no-layer";
         } else if (selectedAVLayers.length === 1) {
