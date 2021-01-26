@@ -12,8 +12,8 @@ $(document).ready(function() {
   latestAnnotationData = {};
   smartTimer = null;
   POLLING_INTERVAL = 1000;
-  POLLING_TIMEOUT = 1950;
-  MAX_POLLING_ITERATIONS = 600;
+  POLLING_TIMEOUT = 25000;
+  MAX_POLLING_ITERATIONS = 3600;
   NFClass = {
     Comp: "NFComp",
     PartComp: "NFPartComp",

@@ -32,8 +32,8 @@ $(document).ready ->
   latestAnnotationData = {}
   smartTimer = null
   POLLING_INTERVAL = 1000
-  POLLING_TIMEOUT = 1950
-  MAX_POLLING_ITERATIONS = 600
+  POLLING_TIMEOUT = 25000 #25s
+  MAX_POLLING_ITERATIONS = 3600 # 1hr
   NFClass =
     Comp: "NFComp"
     PartComp: "NFPartComp"
