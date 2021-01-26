@@ -23,7 +23,7 @@ $(document).ready ->
   # Load NF Libs
   #
 
-  hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')"
+  hook "NFTools.evalFile('runtimeLibraries.jsx')"
 
 
   #
@@ -177,7 +177,7 @@ $(document).ready ->
   #
   $('#reload-button').click ->
     clearInterval smartTimer if smartTimer?
-    hook "$.evalFile($.includePath + '/hooks.jsx')"
+    hook "NFTools.evalFile('hooks.jsx')"
     window.location.reload true
   $('#smart-toggle').click ->
     if smartTimer?
@@ -198,7 +198,7 @@ $(document).ready ->
   $('#convert-shape').click ->
     hook "convertShapeToHighlight()"
   $('#classic-highlight').click ->
-    hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_SetupHighlightLayer.jsx')"
+    hook "NFTools.evalFile('nf_SetupHighlightLayer.jsx')"
   $('#toggle-guides').click ->
     hook "toggleGuideLayers()"
   $('#shy-show-all').click ->
@@ -230,7 +230,7 @@ $(document).ready ->
   $("button.emphasizer-button").click ->
     hook "emphasisLayerSelected()", (res) ->
       if res is "true"
-        hook "$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_Emphasizer.jsx')"
+        hook "NFTools.evalFile('nf_Emphasizer.jsx')"
       else hook "makeEmphasisLayer()"
 
   $("button.gaussy-button").click ->

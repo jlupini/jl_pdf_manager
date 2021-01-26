@@ -8,7 +8,7 @@ $(document).ready(function() {
     }
     return csInterface.evalScript(hookString, callback);
   };
-  hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx')");
+  hook("NFTools.evalFile('runtimeLibraries.jsx')");
   latestAnnotationData = {};
   smartTimer = null;
   POLLING_INTERVAL = 1000;
@@ -185,7 +185,7 @@ $(document).ready(function() {
     if (smartTimer != null) {
       clearInterval(smartTimer);
     }
-    hook("$.evalFile($.includePath + '/hooks.jsx')");
+    hook("NFTools.evalFile('hooks.jsx')");
     return window.location.reload(true);
   });
   $('#smart-toggle').click(function() {
@@ -208,7 +208,7 @@ $(document).ready(function() {
     return hook("convertShapeToHighlight()");
   });
   $('#classic-highlight').click(function() {
-    return hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_SetupHighlightLayer.jsx')");
+    return hook("NFTools.evalFile('nf_SetupHighlightLayer.jsx')");
   });
   $('#toggle-guides').click(function() {
     return hook("toggleGuideLayers()");
@@ -249,7 +249,7 @@ $(document).ready(function() {
   $("button.emphasizer-button").click(function() {
     return hook("emphasisLayerSelected()", function(res) {
       if (res === "true") {
-        return hook("$.evalFile($.includePath + '/../lib/nf_tools/nf-scripts/build/nf_Emphasizer.jsx')");
+        return hook("NFTools.evalFile('nf_Emphasizer.jsx')");
       } else {
         return hook("makeEmphasisLayer()");
       }
