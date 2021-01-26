@@ -25,7 +25,6 @@ $(document).ready ->
 
   hook "NFTools.evalFile('runtimeLibraries.jsx')"
 
-
   #
   # Global Vars
   #
