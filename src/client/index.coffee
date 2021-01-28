@@ -23,7 +23,15 @@ $(document).ready ->
   # Load NF Libs
   #
 
-  hook "NFTools.evalFile('runtimeLibraries.jsx')"
+  hook "var i, len, nfInclude, path, includePaths;
+        var includePaths = $.includePath.split(';');
+        for (i = 0, len = includePaths.length; i < len; i++) {
+          path = includePaths[i];
+          if (path.indexOf('jl_pdf_manager') >= 0) {
+            nfInclude = path;
+          }
+        }
+        $.evalFile(nfInclude + '/../lib/nf_tools/nf-scripts/build/runtimeLibraries.jsx');"
 
   #
   # Global Vars
