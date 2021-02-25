@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "extendscript-debug",
+            "request": "launch",
+            "name": "Current File (2019)",
+            "program": "${file}",
+            // "trace": true,
+            "targetSpecifier": "aftereffects-16.0",
+            "engineName": "main"
+        },
+        {
+            "type": "extendscript-debug",
+            "request": "launch",
+            "name": "Current File (2020)",
+            "program": "${file}",
+            // "trace": true,
+            "targetSpecifier": "aftereffects-17.0",
+            // "dontBreakOnErrors": false,
+            // "debugLevel": 2,
+            "engineName": "main"
+        },
+        {
+            "type": "extendscript-debug",
+            "request": "launch",
+            "name": "Ask for script name",
+            "program": "${workspaceFolder}/${command:AskForScriptName}",
+            "stopOnEntry": false
+        }
+    ]
+}

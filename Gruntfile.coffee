@@ -1,4 +1,4 @@
-sass = require('node-sass')
+sass = require('sass')
 
 module.exports = (grunt) ->
   # Project configuration.
