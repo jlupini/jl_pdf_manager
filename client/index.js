@@ -493,6 +493,7 @@ $(document).ready(function() {
     }
     if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
       $('#layout-panel .expose').removeClass('disabled');
+      $('#layout-panel .bubble-up').removeClass('disabled');
       if (targetData.name.toLowerCase().indexOf('expand') >= 0) {
         $('#layout-panel .expand').removeClass('disabled');
       }
@@ -606,6 +607,20 @@ $(document).ready(function() {
         model = {
           target: data,
           command: "expand"
+        };
+        return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
+      }
+    }
+  });
+  $('#layout-panel .bubble-up').click(function(e) {
+    var $activeItem, data, model;
+    if (!$(this).hasClass('disabled')) {
+      $activeItem = $('#selector-list li.active');
+      data = $activeItem != null ? $activeItem.data() : void 0;
+      if (data["class"] === NFClass.ShapeLayer || data["class"] === NFClass.HighlightLayer) {
+        model = {
+          target: data,
+          command: "bubble"
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }

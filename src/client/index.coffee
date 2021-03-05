@@ -451,6 +451,7 @@ $(document).ready ->
 
     if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer
       $('#layout-panel .expose').removeClass('disabled')
+      $('#layout-panel .bubble-up').removeClass('disabled')
       if targetData.name.toLowerCase().indexOf('expand') >= 0
         $('#layout-panel .expand').removeClass('disabled')
 
@@ -535,6 +536,16 @@ $(document).ready ->
         model =
           target: data
           command: "expand"
+        hook "runLayoutCommand(#{JSON.stringify model})"
+
+  $('#layout-panel .bubble-up').click (e) ->
+    unless $(this).hasClass 'disabled'
+      $activeItem = $('#selector-list li.active')
+      data = $activeItem?.data()
+      if data.class is NFClass.ShapeLayer or data.class is NFClass.HighlightLayer
+        model =
+          target: data
+          command: "bubble"
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   extensionDirectory = csInterface.getSystemPath('extension')
