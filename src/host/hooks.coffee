@@ -156,15 +156,15 @@ try
 
   runLayoutCommand = (model) ->
     try
-      # alert "start"
       app.beginUndoGroup "Run Layout Command"
       activeComp = NFProject.activeComp()
       activeComp.runLayoutCommand model
       app.endUndoGroup()
-      # alert "finished fine"
     catch e
       alert "Error calling hook `runLayoutCommand`: #{e.message}"
-    # alert "after hook tcb"
+
+  openComp = (model) ->
+    aeq.getComp(model.name).openInViewer()
 
   getFullPDFTree = ->
     # Make an object with all the PDFs

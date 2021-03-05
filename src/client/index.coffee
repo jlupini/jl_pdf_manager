@@ -418,11 +418,11 @@ $(document).ready ->
         selectorData = JSON.parse res
         console.log selectorData
         for pdfItem in selectorData.pdfs
-          $newPDFItem = $("<li><span>#{pdfItem.name}</span></li>").appendTo $list
+          $newPDFItem = $("<li><span>#{pdfItem.name.slice(4)}</span></li>").appendTo $list
           $newPDFItem.data pdfItem
           $pageList = $("<ul></ul>").appendTo $newPDFItem
           for pageItem in pdfItem.pages
-            $newPageItem = $("<li><span>#{pageItem.name}</span></li>").appendTo $pageList
+            $newPageItem = $("<li><span>#{pageItem.name.substring(pageItem.name.lastIndexOf('pg') + 2, pageItem.name.lastIndexOf(' '))}</span></li>").appendTo $pageList
             $newPageItem.data pageItem
             if pageItem.shapes.length > 0
               $shapeList = $("<ul></ul>").appendTo $newPageItem
@@ -433,16 +433,21 @@ $(document).ready ->
 
   $('#selector-list').on 'click', 'li', (event) ->
     event.stopPropagation()
+    doubleClicked = $(this).hasClass('active')
+
     $('#selector-list li').removeClass('active')
     targetData = $(this).data()
     targetClass = targetData.class
 
     $('#layout-panel .selector-buttons button').addClass('disabled')
     if targetClass is NFClass.PageComp
-      $('#layout-panel .fullscreen-title').removeClass('disabled')
-      $('#layout-panel .add-small').removeClass('disabled')
-      if targetData.pdfNumber is $('body').data().activePDF and targetData.pageNumber isnt $('body').data().activePage.pageNumber
-        $('#layout-panel .switch-to-page').removeClass('disabled')
+      if doubleClicked
+        hook "openComp(#{JSON.stringify targetData})"
+      else
+        $('#layout-panel .fullscreen-title').removeClass('disabled')
+        $('#layout-panel .add-small').removeClass('disabled')
+        if targetData.pdfNumber is $('body').data().activePDF and targetData.pageNumber isnt $('body').data().activePage.pageNumber
+          $('#layout-panel .switch-to-page').removeClass('disabled')
 
     if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer
       $('#layout-panel .expose').removeClass('disabled')

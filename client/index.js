@@ -437,7 +437,7 @@ $(document).ready(function() {
         results = [];
         for (j = 0, len = ref.length; j < len; j++) {
           pdfItem = ref[j];
-          $newPDFItem = $("<li><span>" + pdfItem.name + "</span></li>").appendTo($list);
+          $newPDFItem = $("<li><span>" + (pdfItem.name.slice(4)) + "</span></li>").appendTo($list);
           $newPDFItem.data(pdfItem);
           $pageList = $("<ul></ul>").appendTo($newPDFItem);
           results.push((function() {
@@ -446,7 +446,7 @@ $(document).ready(function() {
             results1 = [];
             for (k = 0, len1 = ref1.length; k < len1; k++) {
               pageItem = ref1[k];
-              $newPageItem = $("<li><span>" + pageItem.name + "</span></li>").appendTo($pageList);
+              $newPageItem = $("<li><span>" + (pageItem.name.substring(pageItem.name.lastIndexOf('pg') + 2, pageItem.name.lastIndexOf(' '))) + "</span></li>").appendTo($pageList);
               $newPageItem.data(pageItem);
               if (pageItem.shapes.length > 0) {
                 $shapeList = $("<ul></ul>").appendTo($newPageItem);
@@ -473,17 +473,22 @@ $(document).ready(function() {
     }
   };
   $('#selector-list').on('click', 'li', function(event) {
-    var targetClass, targetData;
+    var doubleClicked, targetClass, targetData;
     event.stopPropagation();
+    doubleClicked = $(this).hasClass('active');
     $('#selector-list li').removeClass('active');
     targetData = $(this).data();
     targetClass = targetData["class"];
     $('#layout-panel .selector-buttons button').addClass('disabled');
     if (targetClass === NFClass.PageComp) {
-      $('#layout-panel .fullscreen-title').removeClass('disabled');
-      $('#layout-panel .add-small').removeClass('disabled');
-      if (targetData.pdfNumber === $('body').data().activePDF && targetData.pageNumber !== $('body').data().activePage.pageNumber) {
-        $('#layout-panel .switch-to-page').removeClass('disabled');
+      if (doubleClicked) {
+        hook("openComp(" + (JSON.stringify(targetData)) + ")");
+      } else {
+        $('#layout-panel .fullscreen-title').removeClass('disabled');
+        $('#layout-panel .add-small').removeClass('disabled');
+        if (targetData.pdfNumber === $('body').data().activePDF && targetData.pageNumber !== $('body').data().activePage.pageNumber) {
+          $('#layout-panel .switch-to-page').removeClass('disabled');
+        }
       }
     }
     if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {

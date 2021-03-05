@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openDocument, processRawAnnotationData, runLayoutCommand, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openComp, openDocument, processRawAnnotationData, runLayoutCommand, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 try {
   openDocument = function(location) {
@@ -229,6 +229,9 @@ try {
       e = error;
       return alert("Error calling hook `runLayoutCommand`: " + e.message);
     }
+  };
+  openComp = function(model) {
+    return aeq.getComp(model.name).openInViewer();
   };
   getFullPDFTree = function() {
     var allPageComps, contentTree, e, error, j, k, key, len, len1, outputTree, pageComp, pageCompArr, pageLayers, pdfNumber, shapeLayers, thisPDF, thisPage;
