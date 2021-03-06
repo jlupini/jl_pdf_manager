@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var MAX_POLLING_ITERATIONS, NFClass, POLLING_INTERVAL, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var MAX_POLLING_ITERATIONS, NFClass, POLLING_INTERVAL, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, loadToolTab, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -185,7 +185,7 @@ $(document).ready(function() {
     if (smartTimer != null) {
       clearInterval(smartTimer);
     }
-    hook("NFTools.evalFile('hooks.jsx')");
+    hook("var i, len, nfInclude, path, includePaths; var includePaths = $.includePath.split(';'); for (i = 0, len = includePaths.length; i < len; i++) { path = includePaths[i]; if (path.indexOf('jl_pdf_manager') >= 0) { nfInclude = path; } } $.evalFile(nfInclude + '/../host/hooks.jsx');");
     return window.location.reload(true);
   });
   $('#smart-toggle').click(function() {
@@ -209,6 +209,10 @@ $(document).ready(function() {
   });
   $('#classic-highlight').click(function() {
     return hook("NFTools.evalFile('nf_SetupHighlightLayer.jsx')");
+  });
+  $('#tool-panel').click(function() {
+    $('.tab').removeClass("active");
+    return $('.tab.tool-panel').addClass("active");
   });
   $('#toggle-guides').click(function() {
     return hook("toggleGuideLayers()");
@@ -400,6 +404,52 @@ $(document).ready(function() {
       return loadEmphasisPane();
     }
   });
+  loadToolTab = function() {
+    var $tools, toolRegistry;
+    $tools = $("#tool-panel-tools");
+    toolRegistry = null;
+    return hook("JSON.stringify(toolRegistry)", function(res) {
+      var $newCategoryList, $newListItem, category, key, results, thisTool, toolKey;
+      toolRegistry = JSON.parse(res);
+      results = [];
+      for (key in toolRegistry) {
+        category = toolRegistry[key];
+        $("<h3>" + category.name + "</h3>").appendTo($tools);
+        $newCategoryList = $("<ul class='category-list'></ul>").appendTo($tools);
+        results.push((function() {
+          var results1;
+          results1 = [];
+          for (toolKey in category.tools) {
+            thisTool = category.tools[toolKey];
+            $newListItem = $("<li class='tool-item'>" + thisTool.name + "</li>").appendTo($newCategoryList);
+            results1.push($newListItem.data({
+              key: toolKey
+            }));
+          }
+          return results1;
+        })());
+      }
+      return results;
+    });
+  };
+  loadToolTab();
+  $('#close-tool-panel').click(function(e) {
+    $('.tab').removeClass('active');
+    return $('.tab.main').addClass('active');
+  });
+  $('#run-tool').click(function(e) {
+    hook("runTool('" + ($("#tool-panel-tools li.active").data().key) + "')");
+    return $("#tool-panel-tools li.active").removeClass("active");
+  });
+  $("#tool-panel-tools").on('click', 'li', function(e) {
+    event.stopPropagation();
+    $("#tool-panel-tools li").removeClass("active");
+    return $(this).addClass("active");
+  });
+  $("#tool-panel-tools").on('dblclick', 'li', function(e) {
+    event.stopPropagation();
+    return $('#run-tool').click();
+  });
   loadLayoutPane = function(refreshTree) {
     var $itemName, $list, data, singleLayer;
     if (refreshTree == null) {
@@ -437,7 +487,7 @@ $(document).ready(function() {
         results = [];
         for (j = 0, len = ref.length; j < len; j++) {
           pdfItem = ref[j];
-          $newPDFItem = $("<li><span>" + (pdfItem.name.slice(4)) + "</span></li>").appendTo($list);
+          $newPDFItem = $("<li class='pdf-item'><span>" + (pdfItem.name.slice(4)) + "</span></li>").appendTo($list);
           $newPDFItem.data(pdfItem);
           $pageList = $("<ul></ul>").appendTo($newPDFItem);
           results.push((function() {
@@ -446,7 +496,7 @@ $(document).ready(function() {
             results1 = [];
             for (k = 0, len1 = ref1.length; k < len1; k++) {
               pageItem = ref1[k];
-              $newPageItem = $("<li><span>" + (pageItem.name.substring(pageItem.name.lastIndexOf('pg') + 2, pageItem.name.lastIndexOf(' '))) + "</span></li>").appendTo($pageList);
+              $newPageItem = $("<li class='page-item'><span>" + (pageItem.name.substring(pageItem.name.lastIndexOf('pg') + 2, pageItem.name.lastIndexOf(' '))) + "</span></li>").appendTo($pageList);
               $newPageItem.data(pageItem);
               if (pageItem.shapes.length > 0) {
                 $shapeList = $("<ul></ul>").appendTo($newPageItem);
@@ -456,7 +506,7 @@ $(document).ready(function() {
                   results2 = [];
                   for (l = 0, len2 = ref2.length; l < len2; l++) {
                     shapeItem = ref2[l];
-                    $newShapeItem = $("<li><span>" + shapeItem.name + "</span></li>").appendTo($shapeList);
+                    $newShapeItem = $("<li class='shape-item'><span>" + shapeItem.name + "</span></li>").appendTo($shapeList);
                     results2.push($newShapeItem.data(shapeItem));
                   }
                   return results2;
@@ -473,32 +523,39 @@ $(document).ready(function() {
     }
   };
   $('#selector-list').on('click', 'li', function(event) {
-    var doubleClicked, targetClass, targetData;
+    var targetClass, targetData;
     event.stopPropagation();
-    doubleClicked = $(this).hasClass('active');
-    $('#selector-list li').removeClass('active');
-    targetData = $(this).data();
-    targetClass = targetData["class"];
-    $('#layout-panel .selector-buttons button').addClass('disabled');
-    if (targetClass === NFClass.PageComp) {
-      if (doubleClicked) {
-        hook("openComp(" + (JSON.stringify(targetData)) + ")");
-      } else {
+    if ($(this).hasClass('collapsed')) {
+      $(this).removeClass('collapsed');
+    } else {
+      $(this).addClass('collapsed');
+    }
+    if (!$(this).hasClass('active')) {
+      $('#selector-list li').removeClass('active');
+      targetData = $(this).data();
+      targetClass = targetData["class"];
+      $('#layout-panel .selector-buttons button').addClass('disabled');
+      if (targetClass === NFClass.PageComp) {
         $('#layout-panel .fullscreen-title').removeClass('disabled');
         $('#layout-panel .add-small').removeClass('disabled');
         if (targetData.pdfNumber === $('body').data().activePDF && targetData.pageNumber !== $('body').data().activePage.pageNumber) {
           $('#layout-panel .switch-to-page').removeClass('disabled');
         }
       }
-    }
-    if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
-      $('#layout-panel .expose').removeClass('disabled');
-      $('#layout-panel .bubble-up').removeClass('disabled');
-      if (targetData.name.toLowerCase().indexOf('expand') >= 0) {
-        $('#layout-panel .expand').removeClass('disabled');
+      if (targetClass === NFClass.ShapeLayer || targetClass === NFClass.HighlightLayer) {
+        $('#layout-panel .expose').removeClass('disabled');
+        $('#layout-panel .bubble-up').removeClass('disabled');
+        if (targetData.name.toLowerCase().indexOf('expand') >= 0) {
+          $('#layout-panel .expand').removeClass('disabled');
+        }
       }
+      return $(this).addClass('active');
     }
-    return $(this).addClass('active');
+  });
+  $('#selector-list').on('dblclick', 'li.page-item', function(e) {
+    var targetData;
+    targetData = $(this).data();
+    return hook("openComp(" + (JSON.stringify(targetData)) + ")");
   });
   $('#layout-panel .refresh-tree').click(function(e) {
     if (!$(this).hasClass('disabled')) {

@@ -1,11 +1,16 @@
 html {
   height: 100%;
+  margin: 0;
 }
 
 body {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   background-color: #272727;
   color: white;
+  height: 100%;
+  margin: 0;
+  padding: 10px;
+  overflow: hidden;
 }
 body.no-layer #tab-no-layer {
   color: red;
@@ -55,8 +60,28 @@ body.NFComp #tab-misc-comp {
   font-weight: bold;
 }
 
-#tab-bar {
+.tab {
   display: none;
+  height: 100%;
+}
+.tab.active {
+  display: block;
+}
+
+#tool-panel-tools {
+  height: 70%;
+  overflow: scroll;
+  padding: 15px;
+  background: #3d3d3d;
+}
+#tool-panel-tools ul {
+  padding: 0 0 0 10px;
+  list-style-type: none;
+}
+#tool-panel-tools ul li.active {
+  background-color: #1c1c1c;
+  font-family: "HelveticaNeue-Medium", "Helvetica Neue Medium", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  cursor: pointer;
 }
 
 .transient-panel {
@@ -87,9 +112,13 @@ body.NFComp #tab-misc-comp {
 #layout-panel #selector #selector-list > li {
   padding: 5px;
   margin-bottom: 10px;
+  margin-right: 10px;
   font-size: 20px;
   font-family: "HelveticaNeue-Medium", "Helvetica Neue Medium", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   background-color: #4d4d4d;
+}
+#layout-panel #selector #selector-list > li.collapsed ul {
+  display: none;
 }
 #layout-panel #selector #selector-list > li:last-child {
   margin-bottom: 0;
@@ -97,7 +126,7 @@ body.NFComp #tab-misc-comp {
 #layout-panel #selector #selector-list > li > span {
   display: inline-block;
   padding: 3px;
-  width: 25px;
+  min-width: 25px;
   height: 25px;
   border: 1px solid #f0d286;
   color: #f0d286;

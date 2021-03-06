@@ -10,6 +10,24 @@ try
     debugger
 
   #
+  # Old Tool Panel
+  #
+
+  runTool = (toolKey) ->
+
+    for key of toolRegistry
+      category = toolRegistry[key]
+      choice = category.tools[toolKey] if category.tools[toolKey]?
+
+    return alert "No Tool Selected! (key was #{toolKey})" unless choice?
+    if choice.callback?
+      app.beginUndoGroup "NF Tool: #{choice.name}"
+      choice.callback()
+      app.endUndoGroup()
+    else
+      openScript choice.callbackScript
+
+  #
   # Emphasizer
   #
   makeEmphasisLayer = ->

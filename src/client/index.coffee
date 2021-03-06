@@ -184,8 +184,18 @@ $(document).ready ->
   #
   $('#reload-button').click ->
     clearInterval smartTimer if smartTimer?
-    hook "NFTools.evalFile('hooks.jsx')"
+    hook "var i, len, nfInclude, path, includePaths;
+          var includePaths = $.includePath.split(';');
+          for (i = 0, len = includePaths.length; i < len; i++) {
+            path = includePaths[i];
+            if (path.indexOf('jl_pdf_manager') >= 0) {
+              nfInclude = path;
+            }
+          }
+          $.evalFile(nfInclude + '/../host/hooks.jsx');"
+    # hook "NFTools.evalFile('hooks.jsx')"
     window.location.reload true
+
   $('#smart-toggle').click ->
     if smartTimer?
       $("#smart-toggle").removeClass("running")
@@ -196,7 +206,6 @@ $(document).ready ->
       $("#smart-toggle").addClass("running")
       $('#one-page-annotations').addClass("disabled")
       smartTimer = setInterval checkForUpdates, POLLING_INTERVAL
-
   # Default the timer to on
   $('#smart-toggle').click()
 
@@ -206,6 +215,10 @@ $(document).ready ->
     hook "convertShapeToHighlight()"
   $('#classic-highlight').click ->
     hook "NFTools.evalFile('nf_SetupHighlightLayer.jsx')"
+  $('#tool-panel').click ->
+    $('.tab').removeClass "active"
+    $('.tab.tool-panel').addClass "active"
+
   $('#toggle-guides').click ->
     hook "toggleGuideLayers()"
   $('#shy-show-all').click ->
@@ -386,6 +399,41 @@ $(document).ready ->
       pickerActive = no
       loadEmphasisPane()
 
+  loadToolTab = ->
+    $tools = $("#tool-panel-tools")
+    toolRegistry = null
+    hook "JSON.stringify(toolRegistry)", (res) ->
+      toolRegistry = JSON.parse res
+      for key of toolRegistry
+        category = toolRegistry[key]
+        $("<h3>#{category.name}</h3>").appendTo $tools
+        $newCategoryList = $("<ul class='category-list'></ul>").appendTo $tools
+
+        for toolKey of category.tools
+          thisTool = category.tools[toolKey]
+          $newListItem = $("<li class='tool-item'>#{thisTool.name}</li>").appendTo $newCategoryList
+          $newListItem.data
+            key: toolKey
+
+  loadToolTab()
+
+  $('#close-tool-panel').click (e) ->
+    $('.tab').removeClass('active')
+    $('.tab.main').addClass('active')
+
+  $('#run-tool').click (e) ->
+    hook "runTool('#{$("#tool-panel-tools li.active").data().key}')"
+    $("#tool-panel-tools li.active").removeClass "active"
+
+  $("#tool-panel-tools").on 'click', 'li', (e) ->
+    event.stopPropagation()
+    $("#tool-panel-tools li").removeClass "active"
+    $(this).addClass "active"
+
+  $("#tool-panel-tools").on 'dblclick', 'li', (e) ->
+    event.stopPropagation()
+    $('#run-tool').click()
+
   loadLayoutPane = (refreshTree = no) ->
     data = $("body").data()
 
@@ -418,46 +466,49 @@ $(document).ready ->
         selectorData = JSON.parse res
         console.log selectorData
         for pdfItem in selectorData.pdfs
-          $newPDFItem = $("<li><span>#{pdfItem.name.slice(4)}</span></li>").appendTo $list
+          $newPDFItem = $("<li class='pdf-item'><span>#{pdfItem.name.slice(4)}</span></li>").appendTo $list
           $newPDFItem.data pdfItem
           $pageList = $("<ul></ul>").appendTo $newPDFItem
           for pageItem in pdfItem.pages
-            $newPageItem = $("<li><span>#{pageItem.name.substring(pageItem.name.lastIndexOf('pg') + 2, pageItem.name.lastIndexOf(' '))}</span></li>").appendTo $pageList
+            $newPageItem = $("<li class='page-item'><span>#{pageItem.name.substring(pageItem.name.lastIndexOf('pg') + 2, pageItem.name.lastIndexOf(' '))}</span></li>").appendTo $pageList
             $newPageItem.data pageItem
             if pageItem.shapes.length > 0
               $shapeList = $("<ul></ul>").appendTo $newPageItem
               for shapeItem in pageItem.shapes
 
-                $newShapeItem = $("<li><span>#{shapeItem.name}</span></li>").appendTo $shapeList
+                $newShapeItem = $("<li class='shape-item'><span>#{shapeItem.name}</span></li>").appendTo $shapeList
                 $newShapeItem.data shapeItem
 
   $('#selector-list').on 'click', 'li', (event) ->
     event.stopPropagation()
-    doubleClicked = $(this).hasClass('active')
 
-    $('#selector-list li').removeClass('active')
-    targetData = $(this).data()
-    targetClass = targetData.class
+    if $(this).hasClass('collapsed')
+      $(this).removeClass 'collapsed'
+    else $(this).addClass 'collapsed'
 
-    $('#layout-panel .selector-buttons button').addClass('disabled')
-    if targetClass is NFClass.PageComp
-      if doubleClicked
-        hook "openComp(#{JSON.stringify targetData})"
-      else
+    unless $(this).hasClass('active')
+      $('#selector-list li').removeClass('active')
+      targetData = $(this).data()
+      targetClass = targetData.class
+
+      $('#layout-panel .selector-buttons button').addClass('disabled')
+      if targetClass is NFClass.PageComp
         $('#layout-panel .fullscreen-title').removeClass('disabled')
         $('#layout-panel .add-small').removeClass('disabled')
         if targetData.pdfNumber is $('body').data().activePDF and targetData.pageNumber isnt $('body').data().activePage.pageNumber
           $('#layout-panel .switch-to-page').removeClass('disabled')
 
-    if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer
-      $('#layout-panel .expose').removeClass('disabled')
-      $('#layout-panel .bubble-up').removeClass('disabled')
-      if targetData.name.toLowerCase().indexOf('expand') >= 0
-        $('#layout-panel .expand').removeClass('disabled')
+      if targetClass is NFClass.ShapeLayer or targetClass is NFClass.HighlightLayer
+        $('#layout-panel .expose').removeClass('disabled')
+        $('#layout-panel .bubble-up').removeClass('disabled')
+        if targetData.name.toLowerCase().indexOf('expand') >= 0
+          $('#layout-panel .expand').removeClass('disabled')
 
+      $(this).addClass 'active'
 
-
-    $(this).addClass 'active'
+  $('#selector-list').on 'dblclick', 'li.page-item', (e) ->
+    targetData = $(this).data()
+    hook "openComp(#{JSON.stringify targetData})"
 
   $('#layout-panel .refresh-tree').click (e) ->
     unless $(this).hasClass 'disabled'

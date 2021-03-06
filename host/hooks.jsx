@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openComp, openDocument, processRawAnnotationData, runLayoutCommand, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openComp, openDocument, processRawAnnotationData, runLayoutCommand, runTool, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 try {
   openDocument = function(location) {
@@ -10,6 +10,25 @@ try {
   debug = function() {
     $.level = 2;
     debugger;
+  };
+  runTool = function(toolKey) {
+    var category, choice, key;
+    for (key in toolRegistry) {
+      category = toolRegistry[key];
+      if (category.tools[toolKey] != null) {
+        choice = category.tools[toolKey];
+      }
+    }
+    if (choice == null) {
+      return alert("No Tool Selected! (key was " + toolKey + ")");
+    }
+    if (choice.callback != null) {
+      app.beginUndoGroup("NF Tool: " + choice.name);
+      choice.callback();
+      return app.endUndoGroup();
+    } else {
+      return openScript(choice.callbackScript);
+    }
   };
   makeEmphasisLayer = function() {
     var selectedLayer;
