@@ -1,4 +1,4 @@
-sass = require('sass')
+sass = require('dart-sass')
 
 module.exports = (grunt) ->
   # Project configuration.
