@@ -161,22 +161,24 @@ $(document).ready(function() {
         displayError("got nothing back from polling hook!");
         return $("body").removeClass();
       } else {
-        data = JSON.parse(res);
-        if (compLayerType !== data.bodyClass) {
-          compLayerType = data.bodyClass;
-          $("body").removeClass();
-          $("body").addClass(compLayerType);
-        }
-        $("body").data(data);
-        timerCounter++;
-        if (compLayerType.indexOf(NFClass.PageComp) >= 0) {
-          getPageAnnotations();
-        }
-        if (compLayerType.indexOf(NFClass.EmphasisLayer) >= 0) {
-          loadEmphasisPane();
-        }
-        if (compLayerType.indexOf(NFClass.PartComp) >= 0) {
-          return loadLayoutPane();
+        if (res !== "undefined") {
+          data = JSON.parse(res);
+          if (compLayerType !== data.bodyClass) {
+            compLayerType = data.bodyClass;
+            $("body").removeClass();
+            $("body").addClass(compLayerType);
+          }
+          $("body").data(data);
+          timerCounter++;
+          if (compLayerType.indexOf(NFClass.PageComp) >= 0) {
+            getPageAnnotations();
+          }
+          if (compLayerType.indexOf(NFClass.EmphasisLayer) >= 0) {
+            loadEmphasisPane();
+          }
+          if (compLayerType.indexOf(NFClass.PartComp) >= 0) {
+            return loadLayoutPane();
+          }
         }
       }
     });
@@ -410,26 +412,31 @@ $(document).ready(function() {
     toolRegistry = null;
     return hook("JSON.stringify(toolRegistry)", function(res) {
       var $newCategoryList, $newListItem, category, key, results, thisTool, toolKey;
-      toolRegistry = JSON.parse(res);
-      results = [];
-      for (key in toolRegistry) {
-        category = toolRegistry[key];
-        $("<h3>" + category.name + "</h3>").appendTo($tools);
-        $newCategoryList = $("<ul class='category-list'></ul>").appendTo($tools);
-        results.push((function() {
-          var results1;
-          results1 = [];
-          for (toolKey in category.tools) {
-            thisTool = category.tools[toolKey];
-            $newListItem = $("<li class='tool-item'>" + thisTool.name + "</li>").appendTo($newCategoryList);
-            results1.push($newListItem.data({
-              key: toolKey
-            }));
-          }
-          return results1;
-        })());
+      if (res === "") {
+        return $('#tool-panel').addClass('disabled');
+      } else {
+        $('#tool-panel').removeClass('disabled');
+        toolRegistry = JSON.parse(res);
+        results = [];
+        for (key in toolRegistry) {
+          category = toolRegistry[key];
+          $("<h3>" + category.name + "</h3>").appendTo($tools);
+          $newCategoryList = $("<ul class='category-list'></ul>").appendTo($tools);
+          results.push((function() {
+            var results1;
+            results1 = [];
+            for (toolKey in category.tools) {
+              thisTool = category.tools[toolKey];
+              $newListItem = $("<li class='tool-item'>" + thisTool.name + "</li>").appendTo($newCategoryList);
+              results1.push($newListItem.data({
+                key: toolKey
+              }));
+            }
+            return results1;
+          })());
+        }
+        return results;
       }
-      return results;
     });
   };
   loadToolTab();

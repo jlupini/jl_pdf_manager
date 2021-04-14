@@ -304,9 +304,12 @@ try {
   };
   getPollingData = function() {
     var activeComp, activePage, aeqLayer, allLayers, compType, e, error, i, j, k, layerType, model, prevLayer, ref, ref1, ref2, ref3, selectedAVLayers, selectedLayer, simpLayer, singleSelectedLayerSimplified, thisLayer;
+    model = {};
+    activeComp = app.project.activeItem;
+    if (activeComp == null) {
+      return "undefined";
+    }
     try {
-      model = {};
-      activeComp = app.project.activeItem;
       if ((activeComp != null) && activeComp instanceof CompItem) {
         compType = activeComp.simpleReflection()["class"];
         if (compType === "NFPartComp") {

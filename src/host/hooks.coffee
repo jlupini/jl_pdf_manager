@@ -228,9 +228,10 @@ try
 
   getPollingData = ->
     # NOTE: We use native objects here to speed up polling
+    model = {}
+    activeComp = app.project.activeItem
+    return "undefined" unless activeComp?
     try
-      model = {}
-      activeComp = app.project.activeItem
       if activeComp? and activeComp instanceof CompItem
         compType = activeComp.simpleReflection().class
 

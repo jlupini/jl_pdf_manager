@@ -164,20 +164,21 @@ $(document).ready ->
         displayError "got nothing back from polling hook!"
         $("body").removeClass()
       else
-        # console.log res
-        data = JSON.parse res
-        if compLayerType isnt data.bodyClass
-          compLayerType = data.bodyClass
-          $("body").removeClass()
-          $("body").addClass(compLayerType)
-        $("body").data data
-        timerCounter++
-        if compLayerType.indexOf(NFClass.PageComp) >= 0
-          getPageAnnotations()
-        if compLayerType.indexOf(NFClass.EmphasisLayer) >= 0
-          loadEmphasisPane()
-        if compLayerType.indexOf(NFClass.PartComp) >= 0
-          loadLayoutPane()
+        if res isnt "undefined"
+          # console.log res
+          data = JSON.parse res
+          if compLayerType isnt data.bodyClass
+            compLayerType = data.bodyClass
+            $("body").removeClass()
+            $("body").addClass(compLayerType)
+          $("body").data data
+          timerCounter++
+          if compLayerType.indexOf(NFClass.PageComp) >= 0
+            getPageAnnotations()
+          if compLayerType.indexOf(NFClass.EmphasisLayer) >= 0
+            loadEmphasisPane()
+          if compLayerType.indexOf(NFClass.PartComp) >= 0
+            loadLayoutPane()
 
   #
   # Bindings
@@ -403,17 +404,21 @@ $(document).ready ->
     $tools = $("#tool-panel-tools")
     toolRegistry = null
     hook "JSON.stringify(toolRegistry)", (res) ->
-      toolRegistry = JSON.parse res
-      for key of toolRegistry
-        category = toolRegistry[key]
-        $("<h3>#{category.name}</h3>").appendTo $tools
-        $newCategoryList = $("<ul class='category-list'></ul>").appendTo $tools
+      if res is ""
+        $('#tool-panel').addClass('disabled')
+      else
+        $('#tool-panel').removeClass('disabled')
+        toolRegistry = JSON.parse res
+        for key of toolRegistry
+          category = toolRegistry[key]
+          $("<h3>#{category.name}</h3>").appendTo $tools
+          $newCategoryList = $("<ul class='category-list'></ul>").appendTo $tools
 
-        for toolKey of category.tools
-          thisTool = category.tools[toolKey]
-          $newListItem = $("<li class='tool-item'>#{thisTool.name}</li>").appendTo $newCategoryList
-          $newListItem.data
-            key: toolKey
+          for toolKey of category.tools
+            thisTool = category.tools[toolKey]
+            $newListItem = $("<li class='tool-item'>#{thisTool.name}</li>").appendTo $newCategoryList
+            $newListItem.data
+              key: toolKey
 
   loadToolTab()
 
