@@ -2,13 +2,14 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "type": "extendscript-debug",
             "request": "launch",
-            "name": "Current File (2019)",
+            "name": "Current File (2021)",
             "program": "${file}",
             // "trace": true,
-            "targetSpecifier": "aftereffects-16.0",
+            "targetSpecifier": "aftereffects-18.0",
             "engineName": "main"
         },
         {

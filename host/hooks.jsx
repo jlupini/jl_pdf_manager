@@ -1,4 +1,4 @@
-var convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openComp, openDocument, processRawAnnotationData, runLayoutCommand, runTool, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var applyFMFTransition, clearFMFTransition, convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openComp, openDocument, processRawAnnotationData, runLayoutCommand, runTool, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 try {
   openDocument = function(location) {
@@ -452,6 +452,105 @@ try {
         color: newColor
       });
       annotationLayer.remove();
+    }
+    return app.endUndoGroup();
+  };
+  clearFMFTransition = function() {
+    app.beginUndoGroup("Clear FMF Transitions");
+    NFProject.activeComp().selectedLayers().forEach((function(_this) {
+      return function(theLayer) {
+        var ref, ref1, ref2;
+        if ((ref = theLayer.effect("Transition Type")) != null) {
+          ref.remove();
+        }
+        if ((ref1 = theLayer.effect("Position Override")) != null) {
+          ref1.remove();
+        }
+        if ((ref2 = theLayer.effect("Scale Override")) != null) {
+          ref2.remove();
+        }
+        theLayer.removeNFMarkers();
+        return theLayer.transform("Position").expression = "";
+      };
+    })(this));
+    return app.endUndoGroup();
+  };
+  applyFMFTransition = function(options) {
+    var dropdownItems, mainComp, selectedLayers, slide1, slide2, transitionDuration;
+    app.beginUndoGroup("FMF Transition");
+    dropdownItems = ['Fullscreen', 'Splitscreen', 'Custom'];
+    transitionDuration = 1;
+    mainComp = NFProject.activeComp();
+    selectedLayers = mainComp.selectedLayers();
+    switch (selectedLayers.count()) {
+      case 0:
+        alert("Error: No layer selected");
+        break;
+      case 1:
+      case 2:
+        if (selectedLayers.count() === 2) {
+          if (options.slide === false) {
+            alert("Error: Two layers selected but slide wasn't chosen");
+          } else {
+            if (selectedLayers.get(0).$.inPoint < selectedLayers.get(1).$.inPoint) {
+              slide1 = selectedLayers.get(0);
+              slide2 = selectedLayers.get(1);
+            } else {
+              slide1 = selectedLayers.get(1);
+              slide2 = selectedLayers.get(0);
+            }
+            if (slide2.$.inPoint + mainComp.$.frameDuration >= slide1.$.outPoint) {
+              slide2.$.startTime = slide2.$.startTime - transitionDuration / 2;
+              slide2.$.outPoint = slide2.$.outPoint + transitionDuration / 2;
+              slide1.$.outPoint = slide1.$.outPoint + transitionDuration / 2;
+            }
+          }
+        }
+        selectedLayers.forEach((function(_this) {
+          return function(slideLayer) {
+            var dropdownEffect, offscreenPosEndValue, offscreenPosStartValue, posProp, positionOverride, scaleOverride, slideEffects, temp;
+            slideEffects = slideLayer.effects();
+            if (slideEffects.property("Transition Type") == null) {
+              dropdownEffect = slideEffects.addProperty('ADBE Dropdown Control');
+              temp = dropdownEffect.property(1).setPropertyParameters(dropdownItems);
+              temp.propertyGroup(1).name = "Transition Type";
+              temp.setValue(options.footageType + 1);
+              positionOverride = slideEffects.addProperty('ADBE Point Control');
+              positionOverride.property(1).setValue([960, 540]);
+              positionOverride.name = "Position Override";
+              scaleOverride = slideEffects.addProperty('ADBE Slider Control');
+              scaleOverride.property(1).setValue(100);
+              scaleOverride.name = "Scale Override";
+            }
+            posProp = slideLayer.transform("Position");
+            if (options.slide) {
+              offscreenPosStartValue = [posProp.value[0] + slideLayer.$.width, posProp.value[1], 0];
+              offscreenPosEndValue = [posProp.value[0] - slideLayer.$.width, posProp.value[1], 0];
+              if (selectedLayers.count() === 2) {
+                if (slideLayer.is(slide1)) {
+                  options.out = true;
+                  options["in"] = false;
+                } else {
+                  options["in"] = true;
+                  options.out = false;
+                }
+              }
+            } else {
+              offscreenPosStartValue = offscreenPosEndValue = [posProp.value[0], posProp.value[1] + slideLayer.$.height, 0];
+            }
+            return slideLayer.addInOutMarkersForProperty({
+              property: posProp,
+              length: transitionDuration,
+              startEquation: options["in"] ? EasingEquation.quint.inOut : null,
+              endEquation: options.out ? EasingEquation.quint.inOut : null,
+              startValue: options["in"] ? offscreenPosStartValue : null,
+              endValue: options.out ? offscreenPosEndValue : null
+            });
+          };
+        })(this));
+        break;
+      default:
+        alert("Error: Too many layers selected");
     }
     return app.endUndoGroup();
   };

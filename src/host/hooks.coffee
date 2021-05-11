@@ -363,5 +363,95 @@ try
       annotationLayer.remove()
 
     app.endUndoGroup()
+
+  clearFMFTransition = () ->
+    app.beginUndoGroup "Clear FMF Transitions"
+    NFProject.activeComp().selectedLayers().forEach (theLayer) =>
+      theLayer.effect("Transition Type")?.remove()
+      theLayer.effect("Position Override")?.remove()
+      theLayer.effect("Scale Override")?.remove()
+      theLayer.removeNFMarkers()
+      theLayer.transform("Position").expression = ""
+    app.endUndoGroup()
+
+  applyFMFTransition = (options) ->
+    app.beginUndoGroup "FMF Transition"
+    dropdownItems = [
+      'Fullscreen'
+      'Splitscreen'
+      'Custom'
+    ]
+
+    transitionDuration = 1
+
+    mainComp = NFProject.activeComp()
+    selectedLayers = mainComp.selectedLayers()
+    switch selectedLayers.count()
+      when 0 then alert "Error: No layer selected"
+      when 1, 2
+        if selectedLayers.count() is 2
+          if options.slide is no
+            alert "Error: Two layers selected but slide wasn't chosen"
+          else
+            # Overlap if they're not already overlapped
+            if selectedLayers.get(0).$.inPoint < selectedLayers.get(1).$.inPoint
+              slide1 = selectedLayers.get(0)
+              slide2 = selectedLayers.get(1)
+            else
+              slide1 = selectedLayers.get(1)
+              slide2 = selectedLayers.get(0)
+
+            if slide2.$.inPoint + mainComp.$.frameDuration >= slide1.$.outPoint
+              slide2.$.startTime = slide2.$.startTime - transitionDuration / 2
+              slide2.$.outPoint = slide2.$.outPoint + transitionDuration / 2
+              slide1.$.outPoint = slide1.$.outPoint + transitionDuration / 2
+
+        # else
+        #   do single stuff!
+
+        selectedLayers.forEach (slideLayer) =>
+          # Add the expression controls
+          slideEffects = slideLayer.effects()
+
+          unless slideEffects.property("Transition Type")?
+
+            dropdownEffect = slideEffects.addProperty('ADBE Dropdown Control')
+            temp = dropdownEffect.property(1).setPropertyParameters(dropdownItems)
+            temp.propertyGroup(1).name = "Transition Type"
+            temp.setValue(options.footageType + 1)
+
+            positionOverride = slideEffects.addProperty('ADBE Point Control')
+            positionOverride.property(1).setValue([960,540])
+            positionOverride.name = "Position Override"
+
+            scaleOverride = slideEffects.addProperty('ADBE Slider Control')
+            scaleOverride.property(1).setValue(100)
+            scaleOverride.name = "Scale Override"
+
+          posProp = slideLayer.transform("Position")
+          if options.slide
+            offscreenPosStartValue = [posProp.value[0] + slideLayer.$.width, posProp.value[1],0]
+            offscreenPosEndValue = [posProp.value[0] - slideLayer.$.width, posProp.value[1],0]
+            if selectedLayers.count() is 2
+              if slideLayer.is slide1
+                options.out = yes
+                options.in = no
+              else
+                options.in = yes
+                options.out = no
+
+          else
+            offscreenPosStartValue = offscreenPosEndValue = [posProp.value[0], posProp.value[1] + slideLayer.$.height, 0]
+
+          slideLayer.addInOutMarkersForProperty
+            property: posProp
+            length: transitionDuration
+            startEquation: if options.in then EasingEquation.quint.inOut else null
+            endEquation: if options.out then EasingEquation.quint.inOut else null
+            startValue: if options.in then offscreenPosStartValue else null
+            endValue: if options.out then offscreenPosEndValue else null
+      else alert "Error: Too many layers selected"
+    app.endUndoGroup()
+
 catch e
   alert e

@@ -4,6 +4,11 @@
            <Host Name="AEFT" Port="8088"/>
         </HostList>
     </Extension>
+    <Extension Id="com.avo.panels.fmf">
+       <HostList>
+           <Host Name="AEFT" Port="8087"/>
+        </HostList>
+    </Extension>
     <Extension Id="com.avo.localserver">
        <HostList>
            <Host Name="AEFT" Port="8089"/>

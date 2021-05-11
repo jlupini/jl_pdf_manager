@@ -12,6 +12,7 @@ module.exports = (grunt) ->
       dist:
         files:
           'client/style.css': 'src/client/style.sass'
+          'client/fmf.css': 'src/client/fmf.sass'
     copy:
       clientHTML:
         expand: true

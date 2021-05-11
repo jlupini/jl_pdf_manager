@@ -3,6 +3,7 @@
 <ExtensionManifest ExtensionBundleId="com.avo.panels" ExtensionBundleVersion="1.0.0" Version="7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
     <Extension Id="com.avo.panels.nfassistant" Version="1.0.0" />
+    <Extension Id="com.avo.panels.fmf" Version="1.0.0" />
     <Extension Id="com.avo.localserver" Version="1.0.0" />
   </ExtensionList>
   <ExecutionEnvironment>
@@ -35,6 +36,33 @@
           <Type>Panel</Type>
           <!-- 6) -->
           <Menu>NF Animation Assistant</Menu>
+          <Geometry>
+            <Size>
+              <!-- 7) -->
+              <Height>500</Height>
+              <Width>350</Width>
+            </Size>
+          </Geometry>
+          <Icons />
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <Extension Id="com.avo.panels.fmf">
+      <DispatchInfo>
+        <Resources>
+          <!-- 4) -->
+          <MainPath>./client/fmf.html</MainPath>
+          <!-- 5) -->
+          <ScriptPath>./host/hooks.jsx</ScriptPath>
+          <CEFCommandLine />
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <!-- 6) -->
+          <Menu>Found My Fitness Animator</Menu>
           <Geometry>
             <Size>
               <!-- 7) -->
