@@ -274,8 +274,9 @@ try
                 name: e.name
                 matchName: e.matchName
                 properties: {}
+              effectIndex = model.effects.length - 1
               e.forEach (prop) =>
-                model.effects[i-1].properties[prop.name] =
+                model.effects[effectIndex].properties[prop.name] =
                   value: prop.value
 
         else layerType = "multiple-layers"

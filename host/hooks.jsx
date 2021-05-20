@@ -347,14 +347,16 @@ try {
           aeqLayer = new aeq.Layer(selectedLayer);
           aeqLayer.forEachEffect((function(_this) {
             return function(e, i) {
+              var effectIndex;
               if (e.matchName.includes("AV_")) {
                 model.effects.push({
                   name: e.name,
                   matchName: e.matchName,
                   properties: {}
                 });
+                effectIndex = model.effects.length - 1;
                 return e.forEach(function(prop) {
-                  return model.effects[i - 1].properties[prop.name] = {
+                  return model.effects[effectIndex].properties[prop.name] = {
                     value: prop.value
                   };
                 });
