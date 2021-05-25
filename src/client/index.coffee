@@ -468,6 +468,11 @@ $(document).ready ->
     if $list.children().length is 0 or refreshTree is yes
       $list.empty()
       hook "getFullPDFTree()", (res) ->
+        # console.log res
+        if typeof res is "string"
+          if res.indexOf("Error") >= -1
+            hook "alert('Error getting PDF tree:#{res}')"
+            $('#smart-toggle').click() if smartTimer?
         selectorData = JSON.parse res
         console.log selectorData
         for pdfItem in selectorData.pdfs
