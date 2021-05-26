@@ -489,7 +489,7 @@ $(document).ready(function() {
       return hook("getFullPDFTree()", function(res) {
         var $newPDFItem, $newPageItem, $newShapeItem, $pageList, $shapeList, j, len, pageItem, pdfItem, ref, results, selectorData, shapeItem;
         if (typeof res === "string") {
-          if (res.indexOf("Error") >= -1) {
+          if (res.indexOf("Error") > -1) {
             hook("alert('Error getting PDF tree:" + res + "')");
             if (smartTimer != null) {
               $('#smart-toggle').click();
@@ -497,7 +497,6 @@ $(document).ready(function() {
           }
         }
         selectorData = JSON.parse(res);
-        console.log(selectorData);
         ref = selectorData.pdfs;
         results = [];
         for (j = 0, len = ref.length; j < len; j++) {

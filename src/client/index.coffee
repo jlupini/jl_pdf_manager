@@ -470,11 +470,11 @@ $(document).ready ->
       hook "getFullPDFTree()", (res) ->
         # console.log res
         if typeof res is "string"
-          if res.indexOf("Error") >= -1
+          if res.indexOf("Error") > -1
             hook "alert('Error getting PDF tree:#{res}')"
             $('#smart-toggle').click() if smartTimer?
         selectorData = JSON.parse res
-        console.log selectorData
+        # console.log selectorData
         for pdfItem in selectorData.pdfs
           $newPDFItem = $("<li class='pdf-item'><span>#{pdfItem.name.slice(4)}</span></li>").appendTo $list
           $newPDFItem.data pdfItem
