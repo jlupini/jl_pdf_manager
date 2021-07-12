@@ -58,6 +58,38 @@ $(document).ready ->
   # Debug Vars
   timerCounter = 0
 
+  # Default Settings
+  defaultSettings =
+    edgePadding : 80
+    bottomPadding : 150
+    maskExpansion: 26
+
+    transforms:
+      page:
+        scale:
+          large: 40
+          small: 17
+        position:
+          large: [960, 1228.2]
+          small: [1507, 567]
+
+    constraints:
+      fst:
+        width: 80
+        top: 18
+
+    expose:
+      maxScale: 100
+      fillPercentage: 90
+
+    durations:
+      pageShrink: 1.2
+      pageGrow: 1.2
+      refTransition: 1
+      expandTransition: 1
+      fadeIn: 0.7
+      slideIn: 2
+
   #
   # Helper Functions
   #
@@ -83,6 +115,43 @@ $(document).ready ->
 
   $('#error-bar').click ->
     $(this).hide()
+
+  populateSettingsPanelFromFile = ->
+    hook "editDefaultsFile()", (res) ->
+      obj =
+        result: res
+      if res is ""
+        hook "editDefaultsFile(#{JSON.stringify(defaultSettings)})"
+        settingsContent = defaultSettings
+      else settingsContent = JSON.parse res
+
+      addSettingsItem = (name, value, destination) ->
+        if typeof value is 'object' and value isnt null
+          listItem = $("<li></li>")
+          destination.append listItem
+          dataVal =
+            name: name
+            value: value
+          listItem.data(dataVal)
+          subList = $("<ul><p>#{name}</p></ul>")
+          listItem.append subList
+          for subKey, subVal of value
+            addSettingsItem subKey, subVal, subList
+        else
+          textBox = $("<input type='text' placeholder='#{name}' value='#{value}'></input><label>#{name}</label>")
+          newSettingsItem = $("<li></li>").append textBox
+          dataVal =
+            name: name
+            value: value
+          newSettingsItem.data(dataVal)
+          destination.append newSettingsItem
+
+      $("#settings-options").html("")
+      mainList = $("<ul></ul>")
+      mainSettingsList = $("#settings-options").append mainList
+
+      for k,v of settingsContent
+        addSettingsItem k, v, mainList
 
   getPageAnnotations = ->
     disp = $("#annotation-display")
@@ -219,6 +288,31 @@ $(document).ready ->
   $('#tool-panel').click ->
     $('.tab').removeClass "active"
     $('.tab.tool-panel').addClass "active"
+  $('#settings-tab-button').click ->
+    $('.tab').removeClass "active"
+    $('.tab.settings').addClass "active"
+    populateSettingsPanelFromFile()
+
+  $('#save-settings').click ->
+    # Build a new object
+    getElementsInUL = (ul) ->
+      retObj = {}
+      ul.children("li").each (i) ->
+        subList = $(@).children("ul")
+        if subList.length
+          retObj[$(@).data().name] = getElementsInUL(subList)
+        else
+          retObj[$(@).data().name] = parseFloat($(@).children("input").val())
+      return retObj
+
+    newSettingsObj = getElementsInUL($("#settings-options > ul"))
+    hook "editDefaultsFile(#{JSON.stringify(newSettingsObj)})"
+
+  $('#reset-changes').click ->
+    populateSettingsPanelFromFile()
+  $('#restore-all-settings').click ->
+    hook "editDefaultsFile('')"
+    populateSettingsPanelFromFile()
 
   $('#toggle-guides').click ->
     hook "toggleGuideLayers()"
@@ -423,6 +517,9 @@ $(document).ready ->
   loadToolTab()
 
   $('#close-tool-panel').click (e) ->
+    $('.tab').removeClass('active')
+    $('.tab.main').addClass('active')
+  $('#close-settings-panel').click (e) ->
     $('.tab').removeClass('active')
     $('.tab.main').addClass('active')
 

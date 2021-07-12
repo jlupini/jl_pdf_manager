@@ -1,4 +1,4 @@
-var applyFMFTransition, clearFMFTransition, convertShapeToHighlight, createHighlightFromAnnotation, debug, e, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openComp, openDocument, processRawAnnotationData, runLayoutCommand, runTool, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
+var applyFMFTransition, clearFMFTransition, convertShapeToHighlight, createHighlightFromAnnotation, debug, e, editDefaultsFile, emphasisLayerSelected, error, focusOn, getActivePageFile, getEmphasisProperties, getFullPDFTree, getPollingData, makeEmphasisLayer, openComp, openDocument, processRawAnnotationData, runLayoutCommand, runTool, setBlendingMode, setEmphasisProperties, toggleGuideLayers, transitionClearIn, transitionClearOut, transitionFadeIn, transitionFadeOut, transitionFadeScaleIn, transitionFadeScaleOut, transitionSlideIn, transitionSlideOut;
 
 try {
   openDocument = function(location) {
@@ -29,6 +29,27 @@ try {
     } else {
       return openScript(choice.callbackScript);
     }
+  };
+  editDefaultsFile = function(newContents) {
+    var finalContents, oldContents;
+    oldContents = "";
+    finalContents = "";
+    NFTools.editProjectFile("./.animation_settings.json", (function(_this) {
+      return function(theFileText) {
+        if (newContents != null) {
+          if (newContents === "") {
+            return finalContents = "";
+          } else {
+            return finalContents = JSON.stringify(newContents);
+          }
+        } else if (theFileText != null) {
+          return finalContents = theFileText;
+        } else {
+          return finalContents = "";
+        }
+      };
+    })(this));
+    return finalContents;
   };
   makeEmphasisLayer = function() {
     var selectedLayer;

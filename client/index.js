@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var MAX_POLLING_ITERATIONS, NFClass, POLLING_INTERVAL, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, loadToolTab, pickerActive, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var MAX_POLLING_ITERATIONS, NFClass, POLLING_INTERVAL, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, defaultSettings, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, loadToolTab, pickerActive, populateSettingsPanelFromFile, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -29,6 +29,41 @@ $(document).ready(function() {
     ReferencePageLayer: "NFReferencePageLayer"
   };
   timerCounter = 0;
+  defaultSettings = {
+    edgePadding: 80,
+    bottomPadding: 150,
+    maskExpansion: 26,
+    transforms: {
+      page: {
+        scale: {
+          large: 40,
+          small: 17
+        },
+        position: {
+          large: [960, 1228.2],
+          small: [1507, 567]
+        }
+      }
+    },
+    constraints: {
+      fst: {
+        width: 80,
+        top: 18
+      }
+    },
+    expose: {
+      maxScale: 100,
+      fillPercentage: 90
+    },
+    durations: {
+      pageShrink: 1.2,
+      pageGrow: 1.2,
+      refTransition: 1,
+      expandTransition: 1,
+      fadeIn: 0.7,
+      slideIn: 2
+    }
+  };
   rgbToHex = function(r, g, b) {
     var componentToHex;
     componentToHex = function(c) {
@@ -62,6 +97,58 @@ $(document).ready(function() {
   $('#error-bar').click(function() {
     return $(this).hide();
   });
+  populateSettingsPanelFromFile = function() {
+    return hook("editDefaultsFile()", function(res) {
+      var addSettingsItem, k, mainList, mainSettingsList, obj, results, settingsContent, v;
+      obj = {
+        result: res
+      };
+      if (res === "") {
+        hook("editDefaultsFile(" + (JSON.stringify(defaultSettings)) + ")");
+        settingsContent = defaultSettings;
+      } else {
+        settingsContent = JSON.parse(res);
+      }
+      addSettingsItem = function(name, value, destination) {
+        var dataVal, listItem, newSettingsItem, results, subKey, subList, subVal, textBox;
+        if (typeof value === 'object' && value !== null) {
+          listItem = $("<li></li>");
+          destination.append(listItem);
+          dataVal = {
+            name: name,
+            value: value
+          };
+          listItem.data(dataVal);
+          subList = $("<ul><p>" + name + "</p></ul>");
+          listItem.append(subList);
+          results = [];
+          for (subKey in value) {
+            subVal = value[subKey];
+            results.push(addSettingsItem(subKey, subVal, subList));
+          }
+          return results;
+        } else {
+          textBox = $("<input type='text' placeholder='" + name + "' value='" + value + "'></input><label>" + name + "</label>");
+          newSettingsItem = $("<li></li>").append(textBox);
+          dataVal = {
+            name: name,
+            value: value
+          };
+          newSettingsItem.data(dataVal);
+          return destination.append(newSettingsItem);
+        }
+      };
+      $("#settings-options").html("");
+      mainList = $("<ul></ul>");
+      mainSettingsList = $("#settings-options").append(mainList);
+      results = [];
+      for (k in settingsContent) {
+        v = settingsContent[k];
+        results.push(addSettingsItem(k, v, mainList));
+      }
+      return results;
+    });
+  };
   getPageAnnotations = function() {
     var annotationDate, disp;
     disp = $("#annotation-display");
@@ -215,6 +302,37 @@ $(document).ready(function() {
   $('#tool-panel').click(function() {
     $('.tab').removeClass("active");
     return $('.tab.tool-panel').addClass("active");
+  });
+  $('#settings-tab-button').click(function() {
+    $('.tab').removeClass("active");
+    $('.tab.settings').addClass("active");
+    return populateSettingsPanelFromFile();
+  });
+  $('#save-settings').click(function() {
+    var getElementsInUL, newSettingsObj;
+    getElementsInUL = function(ul) {
+      var retObj;
+      retObj = {};
+      ul.children("li").each(function(i) {
+        var subList;
+        subList = $(this).children("ul");
+        if (subList.length) {
+          return retObj[$(this).data().name] = getElementsInUL(subList);
+        } else {
+          return retObj[$(this).data().name] = parseFloat($(this).children("input").val());
+        }
+      });
+      return retObj;
+    };
+    newSettingsObj = getElementsInUL($("#settings-options > ul"));
+    return hook("editDefaultsFile(" + (JSON.stringify(newSettingsObj)) + ")");
+  });
+  $('#reset-changes').click(function() {
+    return populateSettingsPanelFromFile();
+  });
+  $('#restore-all-settings').click(function() {
+    hook("editDefaultsFile('')");
+    return populateSettingsPanelFromFile();
   });
   $('#toggle-guides').click(function() {
     return hook("toggleGuideLayers()");
@@ -444,6 +562,10 @@ $(document).ready(function() {
     $('.tab').removeClass('active');
     return $('.tab.main').addClass('active');
   });
+  $('#close-settings-panel').click(function(e) {
+    $('.tab').removeClass('active');
+    return $('.tab.main').addClass('active');
+  });
   $('#run-tool').click(function(e) {
     hook("runTool('" + ($("#tool-panel-tools li.active").data().key) + "')");
     return $("#tool-panel-tools li.active").removeClass("active");
@@ -505,21 +627,21 @@ $(document).ready(function() {
           $newPDFItem.data(pdfItem);
           $pageList = $("<ul></ul>").appendTo($newPDFItem);
           results.push((function() {
-            var k, len1, ref1, results1;
+            var l, len1, ref1, results1;
             ref1 = pdfItem.pages;
             results1 = [];
-            for (k = 0, len1 = ref1.length; k < len1; k++) {
-              pageItem = ref1[k];
+            for (l = 0, len1 = ref1.length; l < len1; l++) {
+              pageItem = ref1[l];
               $newPageItem = $("<li class='page-item'><span>" + (pageItem.name.substring(pageItem.name.lastIndexOf('pg') + 2, pageItem.name.lastIndexOf(' '))) + "</span></li>").appendTo($pageList);
               $newPageItem.data(pageItem);
               if (pageItem.shapes.length > 0) {
                 $shapeList = $("<ul></ul>").appendTo($newPageItem);
                 results1.push((function() {
-                  var l, len2, ref2, results2;
+                  var len2, m, ref2, results2;
                   ref2 = pageItem.shapes;
                   results2 = [];
-                  for (l = 0, len2 = ref2.length; l < len2; l++) {
-                    shapeItem = ref2[l];
+                  for (m = 0, len2 = ref2.length; m < len2; m++) {
+                    shapeItem = ref2[m];
                     $newShapeItem = $("<li class='shape-item'><span>" + shapeItem.name + "</span></li>").appendTo($shapeList);
                     results2.push($newShapeItem.data(shapeItem));
                   }

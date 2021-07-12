@@ -68,6 +68,29 @@ body.NFComp #tab-misc-comp {
   display: block;
 }
 
+#settings-options {
+  height: 60%;
+  overflow: scroll;
+  padding: 15px;
+  background: #3d3d3d;
+}
+#settings-options ul {
+  padding: 0 0 0 10px;
+  list-style-type: none;
+}
+#settings-options ul ul {
+  border: 1px grey solid;
+}
+#settings-options ul li {
+  padding-bottom: 10px;
+}
+#settings-options ul li p {
+  font-family: "HelveticaNeue-Medium", "Helvetica Neue Medium", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+#settings-options ul li input {
+  margin-right: 15px;
+}
+
 #tool-panel-tools {
   height: 70%;
   overflow: scroll;

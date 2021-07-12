@@ -28,6 +28,26 @@ try
       openScript choice.callbackScript
 
   #
+  # Defaults File
+  #
+  editDefaultsFile = (newContents) ->
+    oldContents = ""
+    finalContents = ""
+    NFTools.editProjectFile "./.animation_settings.json", (theFileText) =>
+      # $.level = 2
+      # debugger
+      if newContents?
+        if newContents is ""
+          return finalContents = ""
+        else return finalContents = JSON.stringify(newContents)
+      else if theFileText?
+        return finalContents = theFileText
+      else return finalContents = ""
+
+    return finalContents
+
+
+  #
   # Emphasizer
   #
   makeEmphasisLayer = ->
