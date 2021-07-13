@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  var MAX_POLLING_ITERATIONS, NFClass, POLLING_INTERVAL, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, defaultSettings, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, loadToolTab, pickerActive, populateSettingsPanelFromFile, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
+  var MAX_POLLING_ITERATIONS, NFClass, POLLING_INTERVAL, POLLING_TIMEOUT, checkForUpdates, colorPicker, compLayerType, csInterface, currentSettings, defaultSettings, displayError, empColorPickButton, extensionDirectory, getPageAnnotations, getPollingData, hook, isChangingValue, latestAnnotationData, loadEmphasisPane, loadLayoutPane, loadToolTab, pickerActive, populateSettingsPanelFromFile, rgbToHex, rgbToRGBA255, rgbaToFloatRGB, smartTimer, timerCounter;
   csInterface = new CSInterface;
   csInterface.requestOpenExtension('com.my.localserver', '');
   hook = function(hookString, callback) {
@@ -97,12 +97,10 @@ $(document).ready(function() {
   $('#error-bar').click(function() {
     return $(this).hide();
   });
+  currentSettings = {};
   populateSettingsPanelFromFile = function() {
     return hook("editDefaultsFile()", function(res) {
-      var addSettingsItem, k, mainList, mainSettingsList, obj, results, settingsContent, v;
-      obj = {
-        result: res
-      };
+      var addSettingsItem, k, mainList, mainSettingsList, settingsContent, v;
       if (res === "") {
         hook("editDefaultsFile(" + (JSON.stringify(defaultSettings)) + ")");
         settingsContent = defaultSettings;
@@ -141,12 +139,11 @@ $(document).ready(function() {
       $("#settings-options").html("");
       mainList = $("<ul></ul>");
       mainSettingsList = $("#settings-options").append(mainList);
-      results = [];
       for (k in settingsContent) {
         v = settingsContent[k];
-        results.push(addSettingsItem(k, v, mainList));
+        addSettingsItem(k, v, mainList);
       }
-      return results;
+      return currentSettings = settingsContent;
     });
   };
   getPageAnnotations = function() {
@@ -314,10 +311,18 @@ $(document).ready(function() {
       var retObj;
       retObj = {};
       ul.children("li").each(function(i) {
-        var subList;
+        var assemblyArr, subList;
         subList = $(this).children("ul");
         if (subList.length) {
-          return retObj[$(this).data().name] = getElementsInUL(subList);
+          if ($(this).data().value instanceof Array) {
+            assemblyArr = [];
+            subList.children("li").each(function(i) {
+              return assemblyArr.push(parseFloat($(this).children("input").val()));
+            });
+            return retObj[$(this).data().name] = assemblyArr;
+          } else {
+            return retObj[$(this).data().name] = getElementsInUL(subList);
+          }
         } else {
           return retObj[$(this).data().name] = parseFloat($(this).children("input").val());
         }
@@ -325,7 +330,8 @@ $(document).ready(function() {
       return retObj;
     };
     newSettingsObj = getElementsInUL($("#settings-options > ul"));
-    return hook("editDefaultsFile(" + (JSON.stringify(newSettingsObj)) + ")");
+    hook("editDefaultsFile(" + (JSON.stringify(newSettingsObj)) + ")");
+    return currentSettings = newSettingsObj;
   });
   $('#reset-changes').click(function() {
     return populateSettingsPanelFromFile();
@@ -558,6 +564,7 @@ $(document).ready(function() {
     });
   };
   loadToolTab();
+  populateSettingsPanelFromFile();
   $('#close-tool-panel').click(function(e) {
     $('.tab').removeClass('active');
     return $('.tab.main').addClass('active');
@@ -703,7 +710,8 @@ $(document).ready(function() {
     if (!$(this).hasClass('disabled')) {
       model = {
         target: $('body').data().selectedLayers[0],
-        command: "shrink-page"
+        command: "shrink-page",
+        settings: currentSettings
       };
       return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }
@@ -713,7 +721,8 @@ $(document).ready(function() {
     if (!$(this).hasClass('disabled')) {
       model = {
         target: $('body').data().selectedLayers[0],
-        command: "fullscreen-title"
+        command: "fullscreen-title",
+        settings: currentSettings
       };
       return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }
@@ -723,7 +732,8 @@ $(document).ready(function() {
     if (!$(this).hasClass('disabled')) {
       model = {
         target: $('body').data().selectedLayers[0],
-        command: "anchor"
+        command: "anchor",
+        settings: currentSettings
       };
       return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }
@@ -733,7 +743,8 @@ $(document).ready(function() {
     if (!$(this).hasClass('disabled')) {
       model = {
         target: $('body').data().selectedLayers[0],
-        command: "end-element"
+        command: "end-element",
+        settings: currentSettings
       };
       return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
     }
@@ -745,7 +756,8 @@ $(document).ready(function() {
       if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
         model = {
           target: $activeItem.data(),
-          command: "fullscreen-title"
+          command: "fullscreen-title",
+          settings: currentSettings
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
@@ -758,7 +770,8 @@ $(document).ready(function() {
       if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
         model = {
           target: $activeItem.data(),
-          command: "add-small"
+          command: "add-small",
+          settings: currentSettings
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
@@ -771,7 +784,8 @@ $(document).ready(function() {
       if (($activeItem != null ? $activeItem.data()["class"] : void 0) === NFClass.PageComp) {
         model = {
           target: $activeItem.data(),
-          command: "switch-to-page"
+          command: "switch-to-page",
+          settings: currentSettings
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
@@ -785,7 +799,8 @@ $(document).ready(function() {
       if (data["class"] === NFClass.ShapeLayer || data["class"] === NFClass.HighlightLayer) {
         model = {
           target: data,
-          command: "expose"
+          command: "expose",
+          settings: currentSettings
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
@@ -799,7 +814,8 @@ $(document).ready(function() {
       if (data["class"] === NFClass.ShapeLayer || data["class"] === NFClass.HighlightLayer) {
         model = {
           target: data,
-          command: "expand"
+          command: "expand",
+          settings: currentSettings
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }
@@ -813,7 +829,8 @@ $(document).ready(function() {
       if (data["class"] === NFClass.ShapeLayer || data["class"] === NFClass.HighlightLayer) {
         model = {
           target: data,
-          command: "bubble"
+          command: "bubble",
+          settings: currentSettings
         };
         return hook("runLayoutCommand(" + (JSON.stringify(model)) + ")");
       }

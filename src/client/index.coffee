@@ -116,10 +116,9 @@ $(document).ready ->
   $('#error-bar').click ->
     $(this).hide()
 
+  currentSettings = {}
   populateSettingsPanelFromFile = ->
     hook "editDefaultsFile()", (res) ->
-      obj =
-        result: res
       if res is ""
         hook "editDefaultsFile(#{JSON.stringify(defaultSettings)})"
         settingsContent = defaultSettings
@@ -152,6 +151,7 @@ $(document).ready ->
 
       for k,v of settingsContent
         addSettingsItem k, v, mainList
+      currentSettings = settingsContent
 
   getPageAnnotations = ->
     disp = $("#annotation-display")
@@ -300,13 +300,20 @@ $(document).ready ->
       ul.children("li").each (i) ->
         subList = $(@).children("ul")
         if subList.length
-          retObj[$(@).data().name] = getElementsInUL(subList)
+          if $(@).data().value instanceof Array
+            assemblyArr = []
+            subList.children("li").each (i) ->
+              assemblyArr.push parseFloat($(@).children("input").val())
+            retObj[$(@).data().name] = assemblyArr
+          else
+            retObj[$(@).data().name] = getElementsInUL(subList)
         else
           retObj[$(@).data().name] = parseFloat($(@).children("input").val())
       return retObj
 
     newSettingsObj = getElementsInUL($("#settings-options > ul"))
     hook "editDefaultsFile(#{JSON.stringify(newSettingsObj)})"
+    currentSettings = newSettingsObj
 
   $('#reset-changes').click ->
     populateSettingsPanelFromFile()
@@ -515,6 +522,7 @@ $(document).ready ->
               key: toolKey
 
   loadToolTab()
+  populateSettingsPanelFromFile()
 
   $('#close-tool-panel').click (e) ->
     $('.tab').removeClass('active')
@@ -626,6 +634,7 @@ $(document).ready ->
       model =
         target: $('body').data().selectedLayers[0]
         command: "shrink-page"
+        settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .grow-page').click (e) ->
@@ -633,6 +642,7 @@ $(document).ready ->
       model =
         target: $('body').data().selectedLayers[0]
         command: "fullscreen-title"
+        settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .re-anchor').click (e) ->
@@ -640,6 +650,7 @@ $(document).ready ->
       model =
         target: $('body').data().selectedLayers[0]
         command: "anchor"
+        settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .end-element').click (e) ->
@@ -647,6 +658,7 @@ $(document).ready ->
       model =
         target: $('body').data().selectedLayers[0]
         command: "end-element"
+        settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .fullscreen-title').click (e) ->
@@ -656,6 +668,7 @@ $(document).ready ->
         model =
           target: $activeItem.data()
           command: "fullscreen-title"
+          settings: currentSettings
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .add-small').click (e) ->
@@ -665,6 +678,7 @@ $(document).ready ->
         model =
           target: $activeItem.data()
           command: "add-small"
+          settings: currentSettings
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .switch-to-page').click (e) ->
@@ -674,6 +688,7 @@ $(document).ready ->
         model =
           target: $activeItem.data()
           command: "switch-to-page"
+          settings: currentSettings
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .expose').click (e) ->
@@ -684,6 +699,7 @@ $(document).ready ->
         model =
           target: data
           command: "expose"
+          settings: currentSettings
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .expand').click (e) ->
@@ -694,6 +710,7 @@ $(document).ready ->
         model =
           target: data
           command: "expand"
+          settings: currentSettings
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   $('#layout-panel .bubble-up').click (e) ->
@@ -704,6 +721,7 @@ $(document).ready ->
         model =
           target: data
           command: "bubble"
+          settings: currentSettings
         hook "runLayoutCommand(#{JSON.stringify model})"
 
   extensionDirectory = csInterface.getSystemPath('extension')
