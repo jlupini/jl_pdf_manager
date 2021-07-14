@@ -85,11 +85,12 @@ $(document).ready ->
     durations:
       pageShrink: 1.2
       pageGrow: 1.2
-      refTransition: 1
-      expandTransition: 1
-      fadeIn: 0.7
-      slideIn: 2
-      slideOut: 2
+      refTransition: 0.6#1
+      expandTransition: 0.7#1
+      fadeIn: 0.5#0.7
+      slideIn: 1.5#2
+      slideOut: 0.8#2
+      multiEndOffset: 0.3
 
   #
   # Helper Functions
@@ -565,7 +566,7 @@ $(document).ready ->
       $('#layout-panel .active-item button.shrink-page').removeClass 'disabled'
       $('#layout-panel .active-item button.grow-page').removeClass 'disabled'
       $('#layout-panel .active-item button.end-element').removeClass 'disabled'
-    if singleLayer?.class is NFClass.ReferencePageLayer
+    if singleLayer?.class is NFClass.ReferencePageLayer or data.selectedLayers.length > 1
       $('#layout-panel .active-item button.re-anchor').removeClass 'disabled'
       $('#layout-panel .active-item button.end-element').removeClass 'disabled'
 
@@ -633,7 +634,7 @@ $(document).ready ->
   $('#layout-panel .shrink-page').click (e) ->
     unless $(this).hasClass 'disabled'
       model =
-        target: $('body').data().selectedLayers[0]
+        target: $('body').data().selectedLayers
         command: "shrink-page"
         settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"
@@ -641,7 +642,7 @@ $(document).ready ->
   $('#layout-panel .grow-page').click (e) ->
     unless $(this).hasClass 'disabled'
       model =
-        target: $('body').data().selectedLayers[0]
+        target: $('body').data().selectedLayers
         command: "fullscreen-title"
         settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"
@@ -649,7 +650,7 @@ $(document).ready ->
   $('#layout-panel .re-anchor').click (e) ->
     unless $(this).hasClass 'disabled'
       model =
-        target: $('body').data().selectedLayers[0]
+        target: $('body').data().selectedLayers
         command: "anchor"
         settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"
@@ -657,7 +658,7 @@ $(document).ready ->
   $('#layout-panel .end-element').click (e) ->
     unless $(this).hasClass 'disabled'
       model =
-        target: $('body').data().selectedLayers[0]
+        target: $('body').data().selectedLayers
         command: "end-element"
         settings: currentSettings
       hook "runLayoutCommand(#{JSON.stringify model})"

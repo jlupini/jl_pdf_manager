@@ -58,11 +58,12 @@ $(document).ready(function() {
     durations: {
       pageShrink: 1.2,
       pageGrow: 1.2,
-      refTransition: 1,
-      expandTransition: 1,
-      fadeIn: 0.7,
-      slideIn: 2,
-      slideOut: 2
+      refTransition: 0.6,
+      expandTransition: 0.7,
+      fadeIn: 0.5,
+      slideIn: 1.5,
+      slideOut: 0.8,
+      multiEndOffset: 0.3
     }
   };
   rgbToHex = function(r, g, b) {
@@ -609,7 +610,7 @@ $(document).ready(function() {
       $('#layout-panel .active-item button.grow-page').removeClass('disabled');
       $('#layout-panel .active-item button.end-element').removeClass('disabled');
     }
-    if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.ReferencePageLayer) {
+    if ((singleLayer != null ? singleLayer["class"] : void 0) === NFClass.ReferencePageLayer || data.selectedLayers.length > 1) {
       $('#layout-panel .active-item button.re-anchor').removeClass('disabled');
       $('#layout-panel .active-item button.end-element').removeClass('disabled');
     }
@@ -710,7 +711,7 @@ $(document).ready(function() {
     var model;
     if (!$(this).hasClass('disabled')) {
       model = {
-        target: $('body').data().selectedLayers[0],
+        target: $('body').data().selectedLayers,
         command: "shrink-page",
         settings: currentSettings
       };
@@ -721,7 +722,7 @@ $(document).ready(function() {
     var model;
     if (!$(this).hasClass('disabled')) {
       model = {
-        target: $('body').data().selectedLayers[0],
+        target: $('body').data().selectedLayers,
         command: "fullscreen-title",
         settings: currentSettings
       };
@@ -732,7 +733,7 @@ $(document).ready(function() {
     var model;
     if (!$(this).hasClass('disabled')) {
       model = {
-        target: $('body').data().selectedLayers[0],
+        target: $('body').data().selectedLayers,
         command: "anchor",
         settings: currentSettings
       };
@@ -743,7 +744,7 @@ $(document).ready(function() {
     var model;
     if (!$(this).hasClass('disabled')) {
       model = {
-        target: $('body').data().selectedLayers[0],
+        target: $('body').data().selectedLayers,
         command: "end-element",
         settings: currentSettings
       };
