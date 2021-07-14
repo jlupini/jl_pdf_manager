@@ -89,6 +89,7 @@ $(document).ready ->
       expandTransition: 1
       fadeIn: 0.7
       slideIn: 2
+      slideOut: 2
 
   #
   # Helper Functions

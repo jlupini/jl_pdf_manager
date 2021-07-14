@@ -61,7 +61,8 @@ $(document).ready(function() {
       refTransition: 1,
       expandTransition: 1,
       fadeIn: 0.7,
-      slideIn: 2
+      slideIn: 2,
+      slideOut: 2
     }
   };
   rgbToHex = function(r, g, b) {
